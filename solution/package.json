@@ -9,6 +9,7 @@
     "@mantine/hooks": "^7.11.2",
     "@mantine/modals": "^7.11.2",
     "@mantine/nprogress": "^7.11.2",
+    "@mantinex/mantine-logo": "^1.0.1",
     "@vis.gl/react-google-maps": "latest",
     "dayjs": "^1.11.12",
     "react": "^18.2.0",

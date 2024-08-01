@@ -45,6 +45,7 @@ import type { Marker } from "@googlemaps/markerclusterer";
 
 import { Circle } from "./components/circle";
 import { getGeoJSON } from "./api/api";
+import { HeaderSimple } from "./components/Header/header";
 
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 const locations: Poi[] = [
@@ -159,12 +160,6 @@ const App = () => {
             <AdvancedMarker ref={markerRef} position={null} />
             <PoiMarkers pois={locations} />
           </Map>
-          {/* <MapControl position={ControlPosition.TOP}>
-            <div className="autocomplete-control">
-              <PlaceAutocomplete onPlaceSelect={setSelectedPlace} />
-            </div>
-          </MapControl>
-          <MapHandler place={selectedPlace} marker={marker} /> */}
         </APIProvider>
       </div>
     </MantineProvider>
@@ -277,8 +272,6 @@ const PlaceAutocomplete = ({ onPlaceSelect }: PlaceAutocompleteProps) => {
     Array<google.maps.places.AutocompletePrediction>
   >([]);
 
-  // const [inputValue, setInputValue] = useState<string>("");
-
   const [value, setValue] = useState<string>("");
   const [search, setSearch] = useState("");
 
@@ -356,30 +349,6 @@ const PlaceAutocomplete = ({ onPlaceSelect }: PlaceAutocompleteProps) => {
       {item.description}
     </Combobox.Option>
   ));
-
-  // <div className="autocomplete-container">
-  //   <input
-  //     value={inputValue}
-  //     onInput={(event: FormEvent<HTMLInputElement>) => onInputChange(event)}
-  //     placeholder="Search for a place"
-  //   />
-
-  //   {predictionResults.length > 0 && (
-  //     <ul className="custom-list">
-  //       {predictionResults.map(({ place_id, description }) => {
-  //         return (
-  //           <li
-  //             key={place_id}
-  //             className="custom-list-item"
-  //             onClick={() => handleSuggestionClick(place_id)}
-  //           >
-  //             {description}
-  //           </li>
-  //         );
-  //       })}
-  //     </ul>
-  //   )}
-  // </div>;
 
   return (
     <Combobox
