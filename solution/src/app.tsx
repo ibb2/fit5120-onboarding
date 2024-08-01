@@ -18,7 +18,14 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 
 import "@mantine/core/styles.css";
-import { MantineProvider } from "@mantine/core";
+import {
+  Button,
+  Combobox,
+  InputBase,
+  InputLabel,
+  MantineProvider,
+  useCombobox,
+} from "@mantine/core";
 
 import {
   APIProvider,
@@ -59,9 +66,13 @@ const locations: Poi[] = [
 ];
 
 const App = () => {
-  const [selectedPlace, setSelectedPlace] =
+  const [originPlace, setOriginPlace] =
     useState<google.maps.places.PlaceResult | null>(null);
   const [markerRef, marker] = useAdvancedMarkerRef();
+
+  const [destPlace, setDestPlace] =
+    useState<google.maps.places.PlaceResult | null>(null);
+  const [destMarkerRef, destMarker] = useAdvancedMarkerRef();
 
   // get geoJSON data
   const geoJSON = () => {
@@ -97,8 +108,25 @@ const App = () => {
             flexDirection: "column",
           }}
         >
-          <div style={{ margin: "auto" }}>
-            <PlaceAutocomplete onPlaceSelect={setSelectedPlace} />
+          <div
+            style={{
+              display: "flex",
+              columnGap: "2em",
+              width: "80%",
+              marginTop: "auto",
+              marginLeft: "auto",
+              marginRight: "auto",
+              marginBottom: "2em",
+            }}
+          >
+            <div>
+              <InputLabel>From:</InputLabel>
+              <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
+            </div>
+            <div>
+              <InputLabel>Dest:</InputLabel>
+              <PlaceAutocomplete onPlaceSelect={setDestPlace} />
+            </div>
           </div>
           <Map
             defaultZoom={13}
@@ -118,12 +146,14 @@ const App = () => {
             style={{
               display: "flex",
               borderRadius: "1em",
-              margin: "auto",
+              marginBottom: "auto",
+              marginLeft: "auto",
+              marginRight: "auto",
               height: "80%",
               width: "80%",
             }}
           >
-            <Directions />
+            <Directions originPlace={originPlace} destPlace={destPlace} />
             {/* <PlacesAutoComplete /> */}
             {/* <AutocompletePlaces /> */}
             <AdvancedMarker ref={markerRef} position={null} />
@@ -141,7 +171,12 @@ const App = () => {
   );
 };
 
-const Directions = () => {
+interface DirectionsProps {
+  originPlace: any;
+  destPlace: any;
+}
+
+const Directions = ({ originPlace, destPlace }: DirectionsProps) => {
   const map = useMap();
   const routesLibrary = useMapsLibrary("routes");
   const [directionsService, setDirectionsService] =
@@ -164,20 +199,28 @@ const Directions = () => {
   useEffect(() => {
     if (!directionsService || !directionsRenderer) return;
 
-    directionsService
-      .route({
-        origin: "The University of Melbourne",
-        destination: "Little Collins St, Melbourne VIC 3000",
-        travelMode: google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true,
-      })
-      .then((response) => {
-        directionsRenderer.setDirections(response);
-        setRoutes(response.routes);
-      });
+    // console.log("originPlace ", originPlace.formatted_address);
+    // console.log("destPlace ", destPlace.formatted_address);
 
-    return () => directionsRenderer.setMap(null);
-  }, [directionsService, directionsRenderer]);
+    if (originPlace !== null && destPlace !== null) {
+      const originPlaceAddress = originPlace.formatted_address;
+      const destPlaceAddress = destPlace.formatted_address;
+
+      directionsService
+        .route({
+          origin: originPlaceAddress,
+          destination: destPlaceAddress,
+          travelMode: google.maps.TravelMode.DRIVING,
+          provideRouteAlternatives: true,
+        })
+        .then((response) => {
+          console.log("direction", response);
+          directionsRenderer.setDirections(response);
+          setRoutes(response.routes);
+        });
+      return () => directionsRenderer.setMap(null);
+    }
+  }, [directionsService, directionsRenderer, originPlace, destPlace]);
 
   // Update direction route
   useEffect(() => {
@@ -210,31 +253,11 @@ const Directions = () => {
   );
 };
 
-// interface MapHandlerProps {
-//   place: google.maps.places.PlaceResult | null;
-//   marker: google.maps.marker.AdvancedMarkerElement | null;
-// }
-
-// const MapHandler = ({ place, marker }: MapHandlerProps) => {
-//   const map = useMap();
-
-//   useEffect(() => {
-//     if (!map || !place || !marker) return;
-
-//     if (place.geometry?.viewport) {
-//       map.fitBounds(place.geometry?.viewport);
-//     }
-//     marker.position = place.geometry?.location;
-//   }, [map, place, marker]);
-
-//   return null;
-// };
-
 interface PlaceAutocompleteProps {
   onPlaceSelect: (place: google.maps.places.PlaceResult | null) => void;
 }
 
-const PlaceAutocomplete = ({ onPlaceSelect }: Props) => {
+const PlaceAutocomplete = ({ onPlaceSelect }: PlaceAutocompleteProps) => {
   const map = useMap();
   const places = useMapsLibrary("places");
 
@@ -254,7 +277,10 @@ const PlaceAutocomplete = ({ onPlaceSelect }: Props) => {
     Array<google.maps.places.AutocompletePrediction>
   >([]);
 
-  const [inputValue, setInputValue] = useState<string>("");
+  // const [inputValue, setInputValue] = useState<string>("");
+
+  const [value, setValue] = useState<string>("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (!places || !map) return;
@@ -267,26 +293,27 @@ const PlaceAutocomplete = ({ onPlaceSelect }: Props) => {
   }, [map, places]);
 
   const fetchPredictions = useCallback(
-    async (inputValue: string) => {
-      if (!autocompleteService || !inputValue) {
+    async (value: string) => {
+      if (!autocompleteService || !value) {
         setPredictionResults([]);
         return;
       }
 
-      const request = { input: inputValue, sessionToken };
+      const request = { input: value, sessionToken };
       const response = await autocompleteService.getPlacePredictions(request);
 
       setPredictionResults(response.predictions);
+      console.log(response.predictions);
     },
     [autocompleteService, sessionToken],
   );
 
   const onInputChange = useCallback(
-    (event: FormEvent<HTMLInputElement>) => {
-      const value = (event.target as HTMLInputElement)?.value;
-
-      setInputValue(value);
+    (value: string) => {
+      // setInputValue(value);
+      setValue(value);
       fetchPredictions(value);
+      console.log("predictions ", predictionResults);
     },
     [fetchPredictions],
   );
@@ -315,30 +342,94 @@ const PlaceAutocomplete = ({ onPlaceSelect }: Props) => {
     [onPlaceSelect, places, placesService, sessionToken],
   );
 
-  return (
-    <div className="autocomplete-container">
-      <input
-        value={inputValue}
-        onInput={(event: FormEvent<HTMLInputElement>) => onInputChange(event)}
-        placeholder="Search for a place"
-      />
+  // ComboBox Mantine
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
 
-      {predictionResults.length > 0 && (
-        <ul className="custom-list">
-          {predictionResults.map(({ place_id, description }) => {
-            return (
-              <li
-                key={place_id}
-                className="custom-list-item"
-                onClick={() => handleSuggestionClick(place_id)}
-              >
-                {description}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+  const shouldFilterOptions = predictionResults.length > 0;
+  console.log("filter", shouldFilterOptions);
+  const filteredOptions = shouldFilterOptions ? predictionResults : [""];
+
+  const options = filteredOptions.map((item) => (
+    <Combobox.Option value={item.description} key={item.description}>
+      {item.description}
+    </Combobox.Option>
+  ));
+
+  // <div className="autocomplete-container">
+  //   <input
+  //     value={inputValue}
+  //     onInput={(event: FormEvent<HTMLInputElement>) => onInputChange(event)}
+  //     placeholder="Search for a place"
+  //   />
+
+  //   {predictionResults.length > 0 && (
+  //     <ul className="custom-list">
+  //       {predictionResults.map(({ place_id, description }) => {
+  //         return (
+  //           <li
+  //             key={place_id}
+  //             className="custom-list-item"
+  //             onClick={() => handleSuggestionClick(place_id)}
+  //           >
+  //             {description}
+  //           </li>
+  //         );
+  //       })}
+  //     </ul>
+  //   )}
+  // </div>;
+
+  return (
+    <Combobox
+      store={combobox}
+      // withinPortal={false}
+      onOptionSubmit={(val) => {
+        setValue(val);
+        setSearch(val);
+        const selectedPrediction = predictionResults.find(
+          (prediction) => prediction.description === val,
+        );
+        if (selectedPrediction) {
+          handleSuggestionClick(selectedPrediction.place_id);
+        }
+        combobox.closeDropdown();
+      }}
+    >
+      <Combobox.Target>
+        <InputBase
+          rightSection={<Combobox.Chevron />}
+          value={search}
+          onChange={(event) => {
+            if (shouldFilterOptions) {
+              combobox.openDropdown();
+              combobox.updateSelectedOptionIndex();
+            }
+            setSearch(event.currentTarget.value);
+            onInputChange(event.currentTarget.value);
+          }}
+          onClick={() => combobox.openDropdown()}
+          onFocus={() => combobox.openDropdown()}
+          onBlur={() => {
+            combobox.closeDropdown();
+            setSearch(value || "");
+          }}
+          placeholder="Search value"
+          rightSectionPointerEvents="none"
+        />
+      </Combobox.Target>
+
+      <Combobox.Dropdown>
+        <Combobox.Options>
+          {options.length > 0 ? (
+            options
+          ) : (
+            <Combobox.Empty>Nothing found</Combobox.Empty>
+          )}
+        </Combobox.Options>
+      </Combobox.Dropdown>
+    </Combobox>
   );
 };
 
