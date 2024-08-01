@@ -28,6 +28,9 @@ import {
   MapCameraChangedEvent,
   Pin,
   useMapsLibrary,
+  useAdvancedMarkerRef,
+  MapControl,
+  ControlPosition,
 } from "@vis.gl/react-google-maps";
 
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
@@ -56,6 +59,10 @@ const locations: Poi[] = [
 ];
 
 const App = () => {
+  const [selectedPlace, setSelectedPlace] =
+    useState<google.maps.places.PlaceResult | null>(null);
+  const [markerRef, marker] = useAdvancedMarkerRef();
+
   // get geoJSON data
   const geoJSON = () => {
     if (localStorage.getItem("bicycleRoute") !== null) {
@@ -76,6 +83,7 @@ const App = () => {
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "end",
           height: "100%",
           width: "100%",
@@ -84,7 +92,14 @@ const App = () => {
         <APIProvider
           apiKey={process.env.GOOGLE_MAPS_API_KEY}
           onLoad={() => console.log("Maps API has loaded.")}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
+          <div style={{ margin: "auto" }}>
+            <PlaceAutocomplete onPlaceSelect={setSelectedPlace} />
+          </div>
           <Map
             defaultZoom={13}
             defaultCenter={{
@@ -109,9 +124,17 @@ const App = () => {
             }}
           >
             <Directions />
-            <PlacesAutoComplete />
+            {/* <PlacesAutoComplete /> */}
+            {/* <AutocompletePlaces /> */}
+            <AdvancedMarker ref={markerRef} position={null} />
             <PoiMarkers pois={locations} />
           </Map>
+          {/* <MapControl position={ControlPosition.TOP}>
+            <div className="autocomplete-control">
+              <PlaceAutocomplete onPlaceSelect={setSelectedPlace} />
+            </div>
+          </MapControl>
+          <MapHandler place={selectedPlace} marker={marker} /> */}
         </APIProvider>
       </div>
     </MantineProvider>
@@ -187,7 +210,31 @@ const Directions = () => {
   );
 };
 
-const PlacesAutoComplete = ({ onPlaceSelect }: Props) => {
+// interface MapHandlerProps {
+//   place: google.maps.places.PlaceResult | null;
+//   marker: google.maps.marker.AdvancedMarkerElement | null;
+// }
+
+// const MapHandler = ({ place, marker }: MapHandlerProps) => {
+//   const map = useMap();
+
+//   useEffect(() => {
+//     if (!map || !place || !marker) return;
+
+//     if (place.geometry?.viewport) {
+//       map.fitBounds(place.geometry?.viewport);
+//     }
+//     marker.position = place.geometry?.location;
+//   }, [map, place, marker]);
+
+//   return null;
+// };
+
+interface PlaceAutocompleteProps {
+  onPlaceSelect: (place: google.maps.places.PlaceResult | null) => void;
+}
+
+const PlaceAutocomplete = ({ onPlaceSelect }: Props) => {
   const map = useMap();
   const places = useMapsLibrary("places");
 
