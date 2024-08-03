@@ -74,23 +74,6 @@ const App = () => {
     useState<google.maps.places.PlaceResult | null>(null);
   const [destMarkerRef, destMarker] = useAdvancedMarkerRef();
 
-  // get geoJSON data
-  // const geoJSON = () => {
-  //   if (localStorage.getItem("bicycleRoute") !== null) {
-  //     console.log("no new data");
-  //     return;
-  //   }
-  //   getGeoJSON().then((r) => {
-  //     localStorage.setItem("bicycleRoute", r);
-  //     console.log("got new data");
-  //   });
-  //   console.log("should not print");
-  // };
-
-  // geoJSON();
-
-  // Load geoJSON bike route data
-
   return (
     <MantineProvider>
       <div
@@ -154,24 +137,7 @@ const App = () => {
               height: "80%",
               width: "80%",
             }}
-            mapConfigs={MAP_CONFIG}
-            // styles=[{
-            //   featureType: 'administrative.province',
-            //   elementType: 'geometry.stroke',
-            //   stylers: [{
-            //     visibility: '#off'
-            //   }]
-            // }]
-            // map
-            styles={{
-              featureType: "administrative.province",
-              elementType: "geometry.stroke",
-              stylers: [
-                {
-                  visibility: "#off",
-                },
-              ],
-            }}
+            // mapTypeId="hybrid"
           >
             <Directions originPlace={originPlace} destPlace={destPlace} />
             {/* <PlacesAutoComplete /> */}
@@ -213,12 +179,16 @@ const Directions = ({ originPlace, destPlace }: DirectionsProps) => {
 
   const loadData = () => {
     map?.data.loadGeoJson(
-      "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
+      "https://data.melbourne.vic.gov.au/api/v2/catalog/datasets/postcodes/exports/geojson",
     );
 
     map?.data.setStyle({
       strokeColor: "green",
     });
+
+    map?.data.loadGeoJson(
+      "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
+    );
 
     console.log("data loaded.");
     setCount(count + 1);
