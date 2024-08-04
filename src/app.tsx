@@ -581,8 +581,7 @@ const PoiMarkers = (props: {
     mapdata?.setStyle({
       strokeColor: "orange",
       strokeWeight: 1,
-      fillColor: "orange",
-      fillOpacity: 0.2,
+      fillOpacity: 0.5,
     });
     mapdata?.addListener("click", function (event) {
       console.log("Before click ", event.feature);
@@ -599,29 +598,109 @@ const PoiMarkers = (props: {
 
   if (!loadedPostcode) loadPostcodeGeoJSON();
 
-  // const [loadedChoropleth, setLoadedChoropleth] = useState(false);
+  const [loadedChoropleth, setLoadedChoropleth] = useState(false);
 
-  // const createChoroplethLayer = () => {
-  //   let severityAccidents: any;
+  const createChoroplethLayer = () => {
+    let severityAccidents: any;
+    const totalObject = [{}];
 
-  //   fetch(
-  //     "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/severity-accident",
-  //   ).then(async (response) => {
-  //     const severityAccidents = await response.json();
-  //     console.info("Severity accidents ", severityAccidents);
-  //   });
+    const accidentSeverity = localStorage.getItem("severity-accident");
+    if (accidentSeverity === null) {
+      fetch(
+        "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/severity-accident",
+      ).then(async (response) => {
+        const data = await response.json();
+        localStorage.setItem("severity-accident", JSON.stringify(data));
+        severityAccidents = data;
+      });
+    }
 
-  //   // map?.data.setStyle({
-  //   //   strokeColor: "orange",
-  //   //   strokeWeight: 1,
-  //   //   fillColor: "orange",
-  //   //   fillOpacity: 0.2,
-  //   // });
+    // const featureLayer = map?.getFeatureLayer(
+    //   google.maps.FeatureType.ADMINISTRATIVE_AREA_LEVEL_1,
+    // );
 
-  //   setLoadedChoropleth(true);
-  // };
+    // Very Low (1-9): 4 postcodes
+    // Low (10-49): 6 postcodes
+    // Medium (50-99): 2 postcodes
+    // High (100-249): 5 postcodes
+    // Very High (250-499): 3 postcodes
+    // Extreme (500+): 1 postcode
 
-  // if (!loadedChoropleth) createChoroplethLayer();
+    // severityAccidents.map((accident: any) => {
+    // })
+    // if (count > 500) {
+    //   fillColor = "red";
+    // } else if (count > 249) {
+    //   fillColor = "lightRed"
+    // } else if (count > 99) {
+    //   fillColor = "orange"
+    // } else if (count > 49) {
+    //   fillColor = "yellow"
+    // } else if (count > 9) {
+    //   fillColor = "green"
+    // } else {
+    //   fillColor = "lightGreen"
+    // }
+
+    severityAccidents = JSON.parse(accidentSeverity || "");
+
+    map?.data.addListener("click", function (event) {
+      const postcode = event.feature.getProperty("mccid_int");
+      console.log("123", postcode);
+      // props.setSelectedPostcode(postcode);
+      severityAccidents.forEach((accident: any) => {
+        if (accident.postcode === postcode) {
+          console.log(accident.severity);
+
+          let count = 0;
+
+          const parsedSeverity = accident.severity.map((item) => ({
+            severity: severityLables[item.severity],
+            count: parseInt(item.count),
+          }));
+
+          for (let i = 0; i < accident.severity.length; i++) {
+            count += parseInt(accident.severity[i].count);
+          }
+
+          totalObject.push({
+            postcode: accident.postcode,
+            total: count,
+          });
+
+          console.log("total count", count);
+          console.log("12345 ", parsedSeverity);
+          props.selectAccident(parsedSeverity);
+
+          if (count > 500) {
+            map.data.overrideStyle(event.feature, { fillColor: "darkRed" });
+          } else if (count > 249) {
+            map.data.overrideStyle(event.feature, { fillColor: "lightRed" });
+          } else if (count > 99) {
+            map.data.overrideStyle(event.feature, { fillColor: "orange" });
+          } else if (count > 49) {
+            map.data.overrideStyle(event.feature, { fillColor: "yellow" });
+          } else if (count > 9) {
+            map.data.overrideStyle(event.feature, { fillColor: "green" });
+          } else {
+            map.data.overrideStyle(event.feature, { fillColor: "lightGreen" });
+          }
+        }
+      });
+
+      // severityAccidents.map((accident: any) => {
+      // })
+
+      // if else(event.feature.fillColor === "red") {
+      //   map.data.overrideStyle(event.feature, { fillColor: "orange" });
+      // }  {
+      // }
+    });
+
+    setLoadedChoropleth(true);
+  };
+
+  if (!loadedChoropleth) createChoroplethLayer();
 
   const [loadedAccidentInsight, setLoadedAccidentInsight] = useState(false);
   const [accidentInsight, setAccidentInsight] = useState();
