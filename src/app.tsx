@@ -204,10 +204,6 @@ const Directions = ({ originPlace, destPlace }: DirectionsProps) => {
   }, [routesLibrary, map]);
 
   const loadData = () => {
-    map?.data.loadGeoJson(
-      "https://data.melbourne.vic.gov.au/api/v2/catalog/datasets/postcodes/exports/geojson",
-    );
-
     map?.data.setStyle({
       strokeColor: "green",
     });
@@ -485,27 +481,61 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   // Load geoJSON bike route data
   // // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
 
-  const loadData = () => {
-    map?.data.loadGeoJson(
-      "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
-    );
+  const [loadedPostcode, setLoadedPostcode] = useState(false);
 
-    map?.data.addListener("click", function (event) {
-      map.data.overrideStyle(event.feature, { fillColor: "red" });
-    });
+  const loadPostcodeGeoJSON = async () => {
+    const postcode = localStorage.getItem("postcode");
+    if (postcode === null) {
+      console.log("postcode not found in local storage");
+      console.log("Saving now...");
+      fetch(
+        "https://data.melbourne.vic.gov.au/api/v2/catalog/datasets/postcodes/exports/geojson",
+      ).then(async (response) => {
+        const data = await response.json();
 
-    map?.data.setStyle({
-      strokeColor: "orange",
-      strokeWeight: 1,
-      fillColor: "orange",
-      fillOpacity: 0.2,
-    });
+        localStorage.setItem("postcode", JSON.stringify(data));
 
-    console.log("data loaded.");
-    setCount(count + 1);
+        map?.data.addGeoJson(
+          JSON.parse(localStorage.getItem("postcode") || ""),
+        );
+      });
+      console.log("Saved");
+    } else {
+      console.log("postcode found in local storage");
+      map?.data.addGeoJson(JSON.parse(localStorage.getItem("postcode") || ""));
+    }
+    setLoadedPostcode(true);
   };
 
-  if (count < 1) loadData();
+  if (!loadedPostcode) loadPostcodeGeoJSON();
+
+  // const loadData = () => {
+  //   // map?.data.loadGeoJson(
+  //   //   "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
+  //   // );
+
+  //   map?.data.addListener("click", function (event) {
+  //     console.log("Before click ", event.feature.style.fillColor);
+  //     // if (event.feature.fillColor === "red") {
+  //     //   map.data.overrideStyle(event.feature, { fillColor: "orange" });
+  //     // } else {
+  //     map.data.overrideStyle(event.feature, { fillColor: "red" });
+  //     // }
+  //     console.log("After click ", event.feature.style.fillColor);
+  //   });
+
+  //   map?.data.setStyle({
+  //     strokeColor: "orange",
+  //     strokeWeight: 1,
+  //     fillColor: "orange",
+  //     fillOpacity: 0.2,
+  //   });
+
+  //   console.log("data loaded.");
+  //   setCount(count + 1);
+  // };
+
+  // if (count < 1) loadData();
 
   return (
     <>
