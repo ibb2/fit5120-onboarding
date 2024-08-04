@@ -74,6 +74,32 @@ const App = () => {
     useState<google.maps.places.PlaceResult | null>(null);
   const [destMarkerRef, destMarker] = useAdvancedMarkerRef();
 
+  // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
+
+  const [polygons, setPolygons] = useState();
+
+  // const loadData = () => {
+  //   const polygons = map?.data.loadGeoJson(
+  //     "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
+  //   );
+
+  //   setPolygons(polygons)
+
+  //   // map?.addListener("click", handleClick);
+
+  //   map?.data.setStyle({
+  //     strokeColor: "orange",
+  //     strokeWeight: 1,
+  //     fillColor: "orange",
+  //     fillOpacity: 0.2,
+  //   });
+
+  //   console.log("data loaded.");
+  //   setCount(count + 1);
+  // };
+
+  // if (count < 1) loadData();
+
   return (
     <MantineProvider>
       <div
@@ -144,7 +170,7 @@ const App = () => {
             {/* <AutocompletePlaces /> */}
             {/* <AdvancedMarker ref={markerRef} position={null} /> */}
             <AdvancedMarker ref={destMarkerRef} position={null} />
-            {/* <PoiMarkers pois={locations} /> */}
+            <PoiMarkers pois={locations} />
           </Map>
         </APIProvider>
       </div>
@@ -420,11 +446,12 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   const [count, setCount] = useState(0);
 
   const handleClick = useCallback((ev: google.maps.MapMouseEvent) => {
-    if (!map) return;
-    if (!ev.latLng) return;
-    console.log("marker clicked: ", ev.latLng.toString());
-    map.panTo(ev.latLng);
-    setCircleCenter(ev.latLng);
+    // if (!map) return;
+    // if (!ev.latLng) return;
+    // console.log("marker clicked: ", ev.latLng.toString());
+    // map.panTo(ev.latLng);
+    // setCircleCenter(ev.latLng);
+    console.log("clicked");
   });
   // Initialize MarkerClusterer, if the map has changed
   useEffect(() => {
@@ -456,6 +483,29 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   };
 
   // Load geoJSON bike route data
+  // // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
+
+  const loadData = () => {
+    map?.data.loadGeoJson(
+      "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
+    );
+
+    map?.data.addListener("click", function (event) {
+      map.data.overrideStyle(event.feature, { fillColor: "red" });
+    });
+
+    map?.data.setStyle({
+      strokeColor: "orange",
+      strokeWeight: 1,
+      fillColor: "orange",
+      fillOpacity: 0.2,
+    });
+
+    console.log("data loaded.");
+    setCount(count + 1);
+  };
+
+  if (count < 1) loadData();
 
   return (
     <>
