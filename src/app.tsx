@@ -217,8 +217,8 @@ const App = () => {
               <Directions originPlace={originPlace} destPlace={destPlace} />
               {/* <PlacesAutoComplete /> */}
               {/* <AutocompletePlaces /> */}
-              {/* <AdvancedMarker ref={markerRef} position={null} /> */}
-              {/* <AdvancedMarker ref={destMarkerRef} position={null} /> */}
+              <AdvancedMarker ref={markerRef} position={null} />
+              <AdvancedMarker ref={destMarkerRef} position={null} />
               <PoiMarkers
                 pois={locations}
                 selectInsight={selectInsight}
