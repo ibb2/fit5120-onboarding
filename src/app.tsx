@@ -32,6 +32,7 @@ import type { Marker } from "@googlemaps/markerclusterer";
 import { Circle } from "./components/circle";
 import { getGeoJSON } from "./api/api";
 import { BarChart } from "@mantine/charts";
+import { on } from "events";
 
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 const locations: Poi[] = [
@@ -171,7 +172,11 @@ const App = () => {
               </div>
             </div>
             <div>
-              <Button>Enable choropleth</Button>
+              <Button onClick={setShowChoropleth}>
+                {showChoropleth
+                  ? "Hide choropleth view"
+                  : "Enable choropleth view"}
+              </Button>
               <span>gradient for crash data for sub regions</span>
             </div>
           </div>
@@ -738,8 +743,14 @@ const PoiMarkers = (props: {
       return {
         fillColor: color,
         strokeWeight: 1,
+        fillOpacity: 0.5,
+        // visible: props.showChoropleth
       };
     });
+
+    if (!props.showChoropleth) {
+      map?.data.setStyle({});
+    }
 
     // map?.data.addListener("click", function (event) {
     //   const postcode = event.feature.getProperty("mccid_int");
@@ -794,10 +805,16 @@ const PoiMarkers = (props: {
     //   // }
     // });
 
+    // map?.data.setStyle({ visible: props.showChoropleth });
+
     setLoadedChoropleth(true);
   };
 
-  if (!loadedChoropleth) createChoroplethLayer();
+  if (!loadedChoropleth && props.showChoropleth) createChoroplethLayer();
+
+  useEffect(() => {
+    createChoroplethLayer();
+  }, [props.showChoropleth]);
 
   const [loadedAccidentInsight, setLoadedAccidentInsight] = useState(false);
   const [accidentInsight, setAccidentInsight] = useState();
