@@ -1,7 +1,9 @@
+import "@mantine/charts/styles.css";
+import "@mantine/core/styles.css";
+
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 
-import "@mantine/core/styles.css";
 import {
   Button,
   Combobox,
@@ -29,6 +31,7 @@ import type { Marker } from "@googlemaps/markerclusterer";
 
 import { Circle } from "./components/circle";
 import { getGeoJSON } from "./api/api";
+import { BarChart } from "@mantine/charts";
 
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 const locations: Poi[] = [
@@ -65,6 +68,7 @@ const App = () => {
   const map = useMap();
 
   const [count, setCount] = useState(0);
+  const [showMore, onShowMore] = useState(false);
 
   const [originPlace, setOriginPlace] =
     useState<google.maps.places.PlaceResult | null>(null);
@@ -75,13 +79,29 @@ const App = () => {
   const [destMarkerRef, destMarker] = useAdvancedMarkerRef();
 
   // Accident insight for selected local authority
-  const [accidentInsight, setAccidentInsight] = useState();
-  const [selectedAccident, setSelectedAccident] = useState();
+  const [accidentInsight, setAccidentInsight] = useState([]);
+  const [selectedAccident, setSelectedAccident] = useState([]);
   const [selectedPostcode, setSelectedPostcode] = useState();
+
+  const selectAccident = (accident) => {
+    setSelectedAccident(accident);
+  };
+
+  const selectInsight = (accident) => {
+    setAccidentInsight(accident);
+  };
 
   // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
 
   const [polygons, setPolygons] = useState();
+
+  console.log("exists", selectedAccident.length > 0);
+  if (selectedAccident.length > 0) {
+    console.log("selected", selectedAccident);
+  }
+  if (accidentInsight.length > 0) {
+    console.log("selected insight", accidentInsight);
+  }
 
   // const loadData = () => {
   //   const polygons = map?.data.loadGeoJson(
@@ -182,22 +202,43 @@ const App = () => {
               {/* <PlacesAutoComplete /> */}
               {/* <AutocompletePlaces /> */}
               {/* <AdvancedMarker ref={markerRef} position={null} /> */}
-              <AdvancedMarker ref={destMarkerRef} position={null} />
+              {/* <AdvancedMarker ref={destMarkerRef} position={null} /> */}
               <PoiMarkers
                 pois={locations}
-                accidentInsight={accidentInsight}
-                setAccidentInsight={setAccidentInsight}
-                selectedAccident={selectedAccident}
-                setSelectedAccident={setSelectedAccident}
-                selectedPostcode={selectedPostcode}
+                selectInsight={selectInsight}
+                selectAccident={selectAccident}
                 setSelectedPostcode={setSelectedPostcode}
               />
             </Map>
             <div>
               {/* Sidebar */}
               <p>Sidebar</p>
-              <p>{accidentInsight}</p>
+              {/* <p>{accidentInsight}</p> */}
               <p>{selectedPostcode}</p>
+              {selectedAccident.length > 0 && accidentInsight.length > 0 && (
+                <div>
+                  <BarChart
+                    h={300}
+                    w={300}
+                    data={selectedAccident}
+                    dataKey="severity"
+                    series={[{ name: "count", color: "violet.5" }]}
+                  />
+                  <Button onClick={() => onShowMore(!showMore)}>
+                    {showMore ? "Show less" : "Show more"}
+                  </Button>
+                  {showMore && (
+                    <div>
+                      {accidentInsight.map((accident, index) => (
+                        <div>
+                          <p>{accident.accident_type}</p>
+                          <p>{accident.count}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </APIProvider>
@@ -460,11 +501,8 @@ const PlaceAutocomplete = ({ onPlaceSelect }: PlaceAutocompleteProps) => {
 
 const PoiMarkers = (props: {
   pois: Poi[];
-  accidentInsight: any;
-  setAccidentInsight: any;
-  selectedAccident: any;
-  setSelectedAccident: any;
-  selectedPostcode: any;
+  selectInsight: any;
+  selectAccident: any;
   setSelectedPostcode: any;
 }) => {
   const map = useMap();
@@ -589,14 +627,22 @@ const PoiMarkers = (props: {
   const [accidentInsight, setAccidentInsight] = useState();
 
   const handleAccidentInsight = () => {
-    let severityAccidents: any;
-
-    fetch(
-      "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/accident_type_data",
-    ).then(async (response) => {
-      const accidentInsight = await response.json();
-      console.info("Severity accidents ", accidentInsight);
-    });
+    let accidentInsight;
+    const accidentInsightStorage = localStorage.getItem("accident-insights");
+    if (accidentInsightStorage === null) {
+      fetch(
+        "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/accident_type_data",
+      ).then(async (response) => {
+        const data = await response.json();
+        console.info("accident insights", data);
+        localStorage.setItem("accident-insights", JSON.stringify(data));
+        accidentInsight = data;
+      });
+    } else {
+      accidentInsight = JSON.parse(
+        localStorage.getItem("accident-insights") || "",
+      );
+    }
 
     // map?.data.setStyle({
     //   strokeColor: "orange",
@@ -606,12 +652,21 @@ const PoiMarkers = (props: {
     // });
 
     map?.data.addListener("click", function (event) {
-      console.log("click data", event.feature.getProperty("mccid_int"));
-      props.setSelectedPostcode(event.feature.getProperty("mccid_int"));
+      console.log(
+        "accident click data",
+        event.feature.getProperty("mccid_int"),
+      );
+      const postcode = event.feature.getProperty("mccid_int");
+      props.setSelectedPostcode(postcode);
       // if (event.feature.fillColor === "red") {
       //   map.data.overrideStyle(event.feature, { fillColor: "orange" });
       // } else {
-      map?.data.overrideStyle(event.feature, { fillColor: "red" });
+      accidentInsight?.forEach((insight: any) => {
+        if (insight.postcode === postcode) {
+          console.log("insight ", insight);
+          props.selectInsight(insight.accident_type);
+        }
+      });
       // }
     });
 
@@ -619,6 +674,59 @@ const PoiMarkers = (props: {
   };
 
   if (!loadedAccidentInsight) handleAccidentInsight();
+
+  const [loadedAccidentSeverity, setLoadedAccidentSeverity] = useState(false);
+  const [accidentSeverity, setAccidentSeverity] = useState();
+
+  const severityLables = {
+    "3": "Mild",
+    "2": "Severe",
+    "1": "Fatal",
+  };
+
+  const handleAccidentSeverity = () => {
+    let severityAccidents: any;
+
+    const accidentSeverity = localStorage.getItem("severity-accident");
+    if (accidentSeverity === null) {
+      fetch(
+        "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/severity-accident",
+      ).then(async (response) => {
+        const data = await response.json();
+        localStorage.setItem("severity-accident", JSON.stringify(data));
+        severityAccidents = data;
+      });
+    }
+
+    severityAccidents = JSON.parse(accidentSeverity || "");
+
+    map?.data.addListener("click", function (event) {
+      const postcode = event.feature.getProperty("mccid_int");
+      console.log("123", postcode);
+      // props.setSelectedPostcode(postcode);
+      console.log("severityAccients", severityAccidents);
+      severityAccidents.forEach((accident: any) => {
+        if (accident.postcode === postcode) {
+          console.log(accident.severity);
+          const parsedSeverity = accident.severity.map((item) => ({
+            severity: severityLables[item.severity],
+            count: parseInt(item.count),
+          }));
+          console.log("parsedSeverity ", parsedSeverity);
+          props.selectAccident(parsedSeverity);
+        }
+      });
+
+      // if else(event.feature.fillColor === "red") {
+      //   map.data.overrideStyle(event.feature, { fillColor: "orange" });
+      // }  {
+      // }
+    });
+
+    setLoadedAccidentSeverity(true);
+  };
+
+  if (!loadedAccidentSeverity) handleAccidentSeverity();
 
   // const loadData = () => {
   //   // map?.data.loadGeoJson(
