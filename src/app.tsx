@@ -231,32 +231,32 @@ const App = () => {
             <div>
               {/* Sidebar */}
               <p>Sidebar</p>
-              {/* <p>{accidentInsight}</p> */}
-              <p>{selectedPostcode}</p>
-              {selectedAccident.length > 0 && accidentInsight.length > 0 && (
-                <div>
-                  <BarChart
-                    h={300}
-                    w={300}
-                    data={selectedAccident}
-                    dataKey="severity"
-                    series={[{ name: "count", color: "violet.5" }]}
-                  />
-                  <Button onClick={() => onShowMore(!showMore)}>
-                    {showMore ? "Show less" : "Show more"}
-                  </Button>
-                  {showMore && (
-                    <div>
-                      {accidentInsight.map((accident, index) => (
-                        <div>
-                          <p>{accident.accident_type}</p>
-                          <p>{accident.count}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {selectedAccident.length > 0 &&
+                accidentInsight.length > 0 &&
+                showChoropleth && (
+                  <div>
+                    <BarChart
+                      h={300}
+                      w={300}
+                      data={selectedAccident}
+                      dataKey="severity"
+                      series={[{ name: "count", color: "violet.5" }]}
+                    />
+                    <Button onClick={() => onShowMore(!showMore)}>
+                      {showMore ? "Show less" : "Show more"}
+                    </Button>
+                    {showMore && (
+                      <div>
+                        {accidentInsight.map((accident, index) => (
+                          <div>
+                            <p>{accident.accident_type}</p>
+                            <p>{accident.count}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
           </div>
         </APIProvider>
