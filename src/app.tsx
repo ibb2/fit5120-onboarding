@@ -74,6 +74,11 @@ const App = () => {
     useState<google.maps.places.PlaceResult | null>(null);
   const [destMarkerRef, destMarker] = useAdvancedMarkerRef();
 
+  // Accident insight for selected local authority
+  const [accidentInsight, setAccidentInsight] = useState();
+  const [selectedAccident, setSelectedAccident] = useState();
+  const [selectedPostcode, setSelectedPostcode] = useState();
+
   // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
 
   const [polygons, setPolygons] = useState();
@@ -139,39 +144,62 @@ const App = () => {
               <PlaceAutocomplete onPlaceSelect={setDestPlace} />
             </div>
           </div>
-          <Map
-            defaultZoom={13}
-            defaultCenter={{
-              lat: -37.813138869052366,
-              lng: 144.95398015604053,
-            }}
-            onCameraChanged={(ev: MapCameraChangedEvent) =>
-              console.log(
-                "camera changed:",
-                ev.detail.center,
-                "zoom:",
-                ev.detail.zoom,
-              )
-            }
-            mapId="da37f3254c6a6d1c"
+          <div
             style={{
               display: "flex",
-              borderRadius: "1em",
-              marginBottom: "auto",
-              marginLeft: "auto",
-              marginRight: "auto",
-              height: "80%",
-              width: "80%",
+              flexDirection: "row",
+              width: "100%",
+              height: "100%",
             }}
-            // mapTypeId="hybrid"
           >
-            <Directions originPlace={originPlace} destPlace={destPlace} />
-            {/* <PlacesAutoComplete /> */}
-            {/* <AutocompletePlaces /> */}
-            {/* <AdvancedMarker ref={markerRef} position={null} /> */}
-            <AdvancedMarker ref={destMarkerRef} position={null} />
-            <PoiMarkers pois={locations} />
-          </Map>
+            <Map
+              defaultZoom={13}
+              defaultCenter={{
+                lat: -37.813138869052366,
+                lng: 144.95398015604053,
+              }}
+              onCameraChanged={(ev: MapCameraChangedEvent) =>
+                console.log(
+                  "camera changed:",
+                  ev.detail.center,
+                  "zoom:",
+                  ev.detail.zoom,
+                )
+              }
+              mapId="da37f3254c6a6d1c"
+              style={{
+                display: "flex",
+                borderRadius: "1em",
+                marginBottom: "auto",
+                marginLeft: "auto",
+                marginRight: "auto",
+                height: "80%",
+                width: "80%",
+              }}
+              // mapTypeId="hybrid"
+            >
+              <Directions originPlace={originPlace} destPlace={destPlace} />
+              {/* <PlacesAutoComplete /> */}
+              {/* <AutocompletePlaces /> */}
+              {/* <AdvancedMarker ref={markerRef} position={null} /> */}
+              <AdvancedMarker ref={destMarkerRef} position={null} />
+              <PoiMarkers
+                pois={locations}
+                accidentInsight={accidentInsight}
+                setAccidentInsight={setAccidentInsight}
+                selectedAccident={selectedAccident}
+                setSelectedAccident={setSelectedAccident}
+                selectedPostcode={selectedPostcode}
+                setSelectedPostcode={setSelectedPostcode}
+              />
+            </Map>
+            <div>
+              {/* Sidebar */}
+              <p>Sidebar</p>
+              <p>{accidentInsight}</p>
+              <p>{selectedPostcode}</p>
+            </div>
+          </div>
         </APIProvider>
       </div>
     </MantineProvider>
@@ -430,7 +458,15 @@ const PlaceAutocomplete = ({ onPlaceSelect }: PlaceAutocompleteProps) => {
   );
 };
 
-const PoiMarkers = (props: { pois: Poi[] }) => {
+const PoiMarkers = (props: {
+  pois: Poi[];
+  accidentInsight: any;
+  setAccidentInsight: any;
+  selectedAccident: any;
+  setSelectedAccident: any;
+  selectedPostcode: any;
+  setSelectedPostcode: any;
+}) => {
   const map = useMap();
 
   // Refs
@@ -485,6 +521,7 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
 
   const loadPostcodeGeoJSON = async () => {
     const postcode = localStorage.getItem("postcode");
+    const mapdata = map?.data;
     if (postcode === null) {
       console.log("postcode not found in local storage");
       console.log("Saving now...");
@@ -494,20 +531,94 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
         const data = await response.json();
 
         localStorage.setItem("postcode", JSON.stringify(data));
+        mapdata?.addGeoJson(JSON.parse(localStorage.getItem("postcode") || ""));
 
-        map?.data.addGeoJson(
-          JSON.parse(localStorage.getItem("postcode") || ""),
-        );
+        console.log("Saved");
       });
-      console.log("Saved");
     } else {
       console.log("postcode found in local storage");
-      map?.data.addGeoJson(JSON.parse(localStorage.getItem("postcode") || ""));
+      mapdata?.addGeoJson(JSON.parse(localStorage.getItem("postcode") || ""));
     }
+
+    mapdata?.setStyle({
+      strokeColor: "orange",
+      strokeWeight: 1,
+      fillColor: "orange",
+      fillOpacity: 0.2,
+    });
+    mapdata?.addListener("click", function (event) {
+      console.log("Before click ", event.feature);
+      // if (event.feature.fillColor === "red") {
+      //   map.data.overrideStyle(event.feature, { fillColor: "orange" });
+      // } else {
+      mapdata?.overrideStyle(event.feature, { fillColor: "red" });
+      // }
+      console.log("After click ", event.feature);
+    });
+
     setLoadedPostcode(true);
   };
 
   if (!loadedPostcode) loadPostcodeGeoJSON();
+
+  // const [loadedChoropleth, setLoadedChoropleth] = useState(false);
+
+  // const createChoroplethLayer = () => {
+  //   let severityAccidents: any;
+
+  //   fetch(
+  //     "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/severity-accident",
+  //   ).then(async (response) => {
+  //     const severityAccidents = await response.json();
+  //     console.info("Severity accidents ", severityAccidents);
+  //   });
+
+  //   // map?.data.setStyle({
+  //   //   strokeColor: "orange",
+  //   //   strokeWeight: 1,
+  //   //   fillColor: "orange",
+  //   //   fillOpacity: 0.2,
+  //   // });
+
+  //   setLoadedChoropleth(true);
+  // };
+
+  // if (!loadedChoropleth) createChoroplethLayer();
+
+  const [loadedAccidentInsight, setLoadedAccidentInsight] = useState(false);
+  const [accidentInsight, setAccidentInsight] = useState();
+
+  const handleAccidentInsight = () => {
+    let severityAccidents: any;
+
+    fetch(
+      "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/accident_type_data",
+    ).then(async (response) => {
+      const accidentInsight = await response.json();
+      console.info("Severity accidents ", accidentInsight);
+    });
+
+    // map?.data.setStyle({
+    //   strokeColor: "orange",
+    //   strokeWeight: 1,
+    //   fillColor: "orange",
+    //   fillOpacity: 0.2,
+    // });
+
+    map?.data.addListener("click", function (event) {
+      console.log("click data", event.feature.getProperty("mccid_int"));
+      props.setSelectedPostcode(event.feature.getProperty("mccid_int"));
+      // if (event.feature.fillColor === "red") {
+      //   map.data.overrideStyle(event.feature, { fillColor: "orange" });
+      // } else {
+      map?.data.overrideStyle(event.feature, { fillColor: "red" });
+      // }
+    });
+
+    setLoadedAccidentInsight(true);
+  };
+
+  if (!loadedAccidentInsight) handleAccidentInsight();
 
   // const loadData = () => {
   //   // map?.data.loadGeoJson(
@@ -522,13 +633,6 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
   //     map.data.overrideStyle(event.feature, { fillColor: "red" });
   //     // }
   //     console.log("After click ", event.feature.style.fillColor);
-  //   });
-
-  //   map?.data.setStyle({
-  //     strokeColor: "orange",
-  //     strokeWeight: 1,
-  //     fillColor: "orange",
-  //     fillOpacity: 0.2,
   //   });
 
   //   console.log("data loaded.");
