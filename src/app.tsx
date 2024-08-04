@@ -33,6 +33,7 @@ import { Circle } from "./components/circle";
 import { getGeoJSON } from "./api/api";
 import { BarChart } from "@mantine/charts";
 import { on } from "events";
+import { features } from "process";
 
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 const locations: Poi[] = [
@@ -289,14 +290,29 @@ const Directions = ({ originPlace, destPlace }: DirectionsProps) => {
     setDirectionsRenderer(new routesLibrary.DirectionsRenderer({ map }));
   }, [routesLibrary, map]);
 
-  const loadData = () => {
-    map?.data.setStyle({
-      strokeColor: "green",
-    });
+  let bike_data_layer = new google.maps.Data({ map: map! });
 
-    map?.data.loadGeoJson(
+  const loadData = () => {
+    // map?.data.setStyle({
+    //   strokeColor: "green",
+    // });
+
+    // map?.data.loadGeoJson(
+    //   "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
+    // );
+
+    bike_data_layer.loadGeoJson(
       "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
     );
+
+    bike_data_layer.setStyle(function (feature) {
+      return {
+        // fillColor: coQlor,
+        strokeColor: "DarkSlateGrey",
+        strokeWeight: 1,
+        fillOpacity: 0.5,
+      };
+    });
 
     console.log("data loaded.");
     setCount(count + 1);
@@ -574,10 +590,13 @@ const PoiMarkers = (props: {
   // // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
 
   const [loadedPostcode, setLoadedPostcode] = useState(false);
+  const [postcodeFeatures, setPostcodeFeatures] = useState();
 
   const loadPostcodeGeoJSON = async () => {
     const postcode = localStorage.getItem("postcode");
+    let postcode_data_layer = new google.maps.Data({ map: map! });
     const mapdata = map?.data;
+    mapdata?.setStyle({});
     if (postcode === null) {
       console.log("postcode not found in local storage");
       console.log("Saving now...");
@@ -587,34 +606,43 @@ const PoiMarkers = (props: {
         const data = await response.json();
 
         localStorage.setItem("postcode", JSON.stringify(data));
-        mapdata?.addGeoJson(JSON.parse(localStorage.getItem("postcode") || ""));
-
-        console.log("Saved");
+        const features = mapdata?.addGeoJson(
+          JSON.parse(localStorage.getItem("postcode") || ""),
+        );
+        setPostcodeFeatures(features);
+        console.log("Saved", postcodeFeatures);
       });
     } else {
       console.log("postcode found in local storage");
-      mapdata?.addGeoJson(JSON.parse(localStorage.getItem("postcode") || ""));
+      const features = mapdata?.addGeoJson(
+        JSON.parse(localStorage.getItem("postcode") || ""),
+      );
+      setPostcodeFeatures(features);
+      console.log("Saved", postcodeFeatures);
     }
 
     mapdata?.setStyle({
-      strokeColor: "orange",
+      strokeColor: "black",
       strokeWeight: 1,
       fillOpacity: 0.5,
+      visible: props.showChoropleth,
     });
+
+    if (!props.showChoropleth) {
+      map?.data.setStyle({});
+    }
     mapdata?.addListener("click", function (event) {
       console.log("Before click ", event.feature);
       // if (event.feature.fillColor === "red") {
       //   map.data.overrideStyle(event.feature, { fillColor: "orange" });
       // } else {
-      mapdata?.overrideStyle(event.feature, { fillColor: "red" });
+      // mapdata?.overrideStyle(event.feature, { fillColor: "red" });
       // }
       console.log("After click ", event.feature);
     });
 
     setLoadedPostcode(true);
   };
-
-  if (!loadedPostcode) loadPostcodeGeoJSON();
 
   const [loadedChoropleth, setLoadedChoropleth] = useState(false);
 
@@ -744,7 +772,7 @@ const PoiMarkers = (props: {
         fillColor: color,
         strokeWeight: 1,
         fillOpacity: 0.5,
-        // visible: props.showChoropleth
+        visible: props.showChoropleth,
       };
     });
 
@@ -810,11 +838,30 @@ const PoiMarkers = (props: {
     setLoadedChoropleth(true);
   };
 
-  if (!loadedChoropleth && props.showChoropleth) createChoroplethLayer();
+  // if (!loadedChoropleth && props.showChoropleth) createChoroplethLayer();
 
   useEffect(() => {
-    createChoroplethLayer();
-  }, [props.showChoropleth]);
+    // if (postcodeFeatures.length > 0) {
+    //   map?.data.remove(postcodeFeatures);
+    // }
+    // else {
+
+    if (postcodeFeatures !== undefined) {
+      // Fucked up code to handle toggling the choropleth data layer
+      if (!props.showChoropleth) {
+        for (let i = 0; i < postcodeFeatures.length; i++) {
+          map?.data.remove(postcodeFeatures[i]);
+        }
+        setPostcodeFeatures(undefined);
+      }
+    } else {
+      if (props.showChoropleth) {
+        loadPostcodeGeoJSON();
+        createChoroplethLayer();
+      }
+    }
+    console.log("postcodeFeatures", postcodeFeatures);
+  }, [props.showChoropleth, postcodeFeatures]);
 
   const [loadedAccidentInsight, setLoadedAccidentInsight] = useState(false);
   const [accidentInsight, setAccidentInsight] = useState();
