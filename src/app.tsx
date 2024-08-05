@@ -68,49 +68,59 @@ const App = () => {
     if (currentTab === "Map") {
       return <MapContent />;
     } else if (currentTab === "About Us") {
-      return <AboutUs />;
+      return (
+        <TextBox
+          title="About Us"
+          content="Welcome to our application. We provide detailed insights into various locations using advanced mapping technologies. Our aim is to help you navigate and understand your surroundings better."
+        />
+      );
+    } else if (currentTab === "Instruction") {
+      return (
+        <TextBox
+          title="Instruction"
+          content="1. Use the search bar to find your origin and destination.
+2. Click on the Map button to view the map.
+3. Use the filter button to apply various filters on the map.
+4. Click on the data insight card to view more detailed information.
+5. Navigate through the map to explore different points of interest."
+        />
+      );
     }
   };
 
   return (
     <MantineProvider>
-      <div style={{ display: "flex", height: "100%", width: "100%" }}>
-        <nav
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            padding: "1em",
-            background: "#333",
-            color: "#fff",
-            width: "200px",
-          }}
-        >
-          <Button
-            onClick={() => setCurrentTab("Map")}
-            style={{ margin: "1em 0" }}
-          >
-            Map
-          </Button>
-          <Button
-            onClick={() => setCurrentTab("About Us")}
-            style={{ margin: "1em 0" }}
-          >
-            About Us
-          </Button>
-        </nav>
-        <div
-          style={{
-            flex: 1,
-            heigh: "100lvh",
-            overflow: "hidden",
-          }}
-        >
-          {renderContent()}
-        </div>
+      <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+        <div style={{ flex: 1 }}>{renderContent()}</div>
       </div>
     </MantineProvider>
   );
 };
+
+const TextBox = ({ title, content }) => (
+  <div
+    style={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      zIndex: 2,
+      width: "50%",
+      padding: "2em",
+      backgroundColor: "rgba(255, 255, 255, 0.9)",
+      borderRadius: "8px",
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    }}
+  >
+    <Title order={2} style={{ marginBottom: "1em" }}>
+      {title}
+    </Title>
+    <Text>{content}</Text>
+    <Button onClick={() => setCurrentTab("Map")} style={{ marginTop: "1em" }}>
+      Close
+    </Button>
+  </div>
+);
 
 const MapContent = () => {
   const map = useMap();
@@ -163,54 +173,139 @@ const MapContent = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100lvh",
-        // paddingBottom: "2em",
-        marginBottom: "2em",
+        height: "100%",
+        width: "100%",
       }}
     >
-      <Space h="xl" />
-      <Group justify="space-around">
-        <Stack>
-          <Title order={3}>Navigate</Title>
-          <Group>
-            <div>
-              <InputLabel>From:</InputLabel>
-              <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
-            </div>
-            <div>
-              <InputLabel>Dest:</InputLabel>
-              <PlaceAutocomplete onPlaceSelect={setDestPlace} />
-            </div>
-          </Group>
-        </Stack>
-        {/* <Group style={{ alignSelf: "flex-end" }}>
-          <Switch onChange={toggleChoropleth} label="Choropleth" />
-        </Group> */}
-        <div style={{ alignSelf: "flex-end" }}>
-          <Button
-            onClick={toggleChoropleth}
-            size="xs"
-            style={{
-              width: "50px",
-              height: "50px",
-              backgroundColor: "#fff",
-              border: "1px solid #ccc",
-              borderRadius: "50%",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <img
-              src="https://img.icons8.com/ios-filled/50/000000/filter.png"
-              alt="Filter"
-              style={{ width: "16px", height: "16px" }}
-            />
-          </Button>
-        </div>
-      </Group>
-      <Space h="xl" />
+      <div
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1,
+          width: "70%",
+          display: "flex",
+          alignItems: "center",
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          padding: "1em",
+          borderRadius: "8px",
+        }}
+      >
+        <Button
+          onClick={() => setCurrentTab("Map")}
+          style={{ margin: "1em 0", marginRight: "1em" }}
+        >
+          Map
+        </Button>
+        <Button
+          onClick={() => setCurrentTab("Instruction")}
+          style={{ margin: "1em 0", marginRight: "1em" }}
+        >
+          Instruction
+        </Button>
+        <Button
+          onClick={() => setCurrentTab("About Us")}
+          style={{ margin: "1em 0", marginRight: "1em" }}
+        >
+          About Us
+        </Button>
+        <Group style={{ flex: 0.8 }}>
+          <div style={{ flex: 0.8 }}>
+            <InputLabel>From:</InputLabel>
+            <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
+          </div>
+          <div style={{ flex: 0.8 }}>
+            <InputLabel>Dest:</InputLabel>
+            <PlaceAutocomplete onPlaceSelect={setDestPlace} />
+          </div>
+        </Group>
+        <Button
+          onClick={toggleChoropleth}
+          size="xs"
+          style={{
+            width: "50px",
+            height: "50px",
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: "50%",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginLeft: "1em",
+          }}
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/filter.png"
+            alt="Filter"
+            style={{ width: "16px", height: "16px" }}
+          />
+        </Button>
+      </div>
+      <div
+        style={{ position: "absolute", top: "10px", right: "10px", zIndex: 1 }}
+      >
+        {selectedAccident.length > 0 &&
+          accidentInsight.length > 0 &&
+          showChoropleth && (
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Center style={{ marginBottom: "4em" }}>
+                <Title order={4}>Data insight</Title>
+              </Center>
+              <BarChart
+                h={200}
+                w={300}
+                data={selectedAccident}
+                dataKey="severity"
+                series={[{ name: "count", color: "violet.5" }]}
+              />
+              <Space h="lg" />
+              <div>
+                <Button
+                  fullWidth
+                  radius="md"
+                  variant="light"
+                  onClick={() => onShowMore(!showMore)}
+                >
+                  {showMore ? "Show less" : "Show more"}
+                </Button>
+                <Space h="md" />
+                <ScrollArea.Autosize>
+                  {showMore && (
+                    <Stack
+                      h={200}
+                      bg="var(--mantine-color-body)"
+                      align="stretch"
+                      justify="flex-start"
+                      gap="sm"
+                    >
+                      {accidentInsight.map((accident, index) => (
+                        <Center key={index}>
+                          <Card
+                            shadow="none"
+                            padding={"sm"}
+                            withBorder
+                            w={"100%"}
+                          >
+                            <Group justify="space-between" w={"100%"}>
+                              <Text fw={500} p={0} m={0}>
+                                {accident.accident_type}
+                              </Text>
+                              <Text fw={500} p={0} m={0}>
+                                {accident.count}
+                              </Text>
+                            </Group>
+                          </Card>
+                        </Center>
+                      ))}
+                    </Stack>
+                  )}
+                </ScrollArea.Autosize>
+              </div>
+            </Card>
+          )}
+      </div>
       <div
         style={{
           display: "flex",
@@ -237,12 +332,8 @@ const MapContent = () => {
           mapId="da37f3254c6a6d1c"
           style={{
             display: "flex",
-            borderRadius: "1em",
-            marginBottom: "auto",
-            marginLeft: "auto",
-            marginRight: "auto",
-            height: "70%",
-            width: "70%",
+            height: "100%",
+            width: "100%",
           }}
         >
           <Directions originPlace={originPlace} destPlace={destPlace} />
@@ -256,112 +347,8 @@ const MapContent = () => {
             showChoropleth={showChoropleth}
           />
         </Map>
-        {/* Sidebar */}
-        <div>
-          {selectedAccident.length > 0 &&
-            accidentInsight.length > 0 &&
-            showChoropleth && (
-              <div>
-                <Card shadow="sm" padding="lg" radius="md" withBorder>
-                  <Center style={{ marginBottom: "4em" }}>
-                    <Title order={4}>Data insight</Title>
-                  </Center>
-
-                  {/* <Card.Section>
-                      <Image
-                        src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-                        height={160}
-                        alt="Norway"
-                      />
-                    </Card.Section> */}
-                  <BarChart
-                    h={200}
-                    w={300}
-                    data={selectedAccident}
-                    dataKey="severity"
-                    series={[{ name: "count", color: "violet.5" }]}
-                  />
-                  <Space h="lg" />
-
-                  {/* <Group justify="space-between" mt="md" mb="xs">
-                        <Text fw={500}>Norway Fjord Adventures</Text>
-                        <Badge color="pink">On Sale</Badge>
-                      </Group> */}
-
-                  {/* <Text size="sm" c="dimmed">
-                        With Fjord Tours you can explore more of the magical
-                        fjord landscapes with tours and activities on and around
-                        the fjords of Norway
-                      </Text> */}
-                  <div>
-                    <Button
-                      fullWidth
-                      radius="md"
-                      variant="light"
-                      onClick={() => onShowMore(!showMore)}
-                    >
-                      {showMore ? "Show less" : "Show more"}
-                    </Button>
-
-                    <Space h="md" />
-
-                    <ScrollArea.Autosize>
-                      {showMore && (
-                        <Stack
-                          h={200}
-                          bg="var(--mantine-color-body)"
-                          align="stretch"
-                          justify="flex-start"
-                          gap="sm"
-                        >
-                          {accidentInsight.map((accident, index) => (
-                            <Center>
-                              <Card
-                                shadow="none"
-                                padding={"sm"}
-                                withBorder
-                                w={"100%"}
-                              >
-                                <Group justify="space-between" w={"100%"}>
-                                  <Text fw={500} p={0} m={0}>
-                                    {accident.accident_type}
-                                  </Text>
-                                  <Text fw={500} p={0} m={0}>
-                                    {accident.count}
-                                  </Text>
-                                </Group>
-                              </Card>
-                            </Center>
-                          ))}
-                        </Stack>
-                      )}
-                    </ScrollArea.Autosize>
-                  </div>
-                </Card>
-              </div>
-            )}
-        </div>
       </div>
     </APIProvider>
-  );
-};
-
-const AboutUs = () => {
-  return (
-    <div style={{ padding: "2em" }}>
-      <Container>
-        <Group>
-          <Center>
-            <h1>About Us</h1>
-          </Center>
-          <Text>
-            Welcome to our application. We provide detailed insights into
-            various locations using advanced mapping technologies. Our aim is to
-            help you navigate and understand your surroundings better.
-          </Text>
-        </Group>
-      </Container>
-    </div>
   );
 };
 

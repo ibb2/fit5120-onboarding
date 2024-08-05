@@ -6,11 +6,21 @@ import { createRoot } from "react-dom/client";
 
 import {
   Button,
+  Card,
+  Center,
   Combobox,
+  Group,
   InputBase,
   InputLabel,
   MantineProvider,
+  ScrollArea,
+  Space,
+  Stack,
+  Title,
   useCombobox,
+  Text,
+  Switch,
+  Container,
 } from "@mantine/core";
 
 import {
@@ -30,6 +40,7 @@ import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import type { Marker } from "@googlemaps/markerclusterer";
 
 import { BarChart } from "@mantine/charts";
+import { Tooltip } from "recharts";
 
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 const locations: Poi[] = [
@@ -57,41 +68,59 @@ const App = () => {
     if (currentTab === "Map") {
       return <MapContent />;
     } else if (currentTab === "About Us") {
-      return <AboutUs />;
+      return (
+        <TextBox
+          title="About Us"
+          content="Welcome to our application. We provide detailed insights into various locations using advanced mapping technologies. Our aim is to help you navigate and understand your surroundings better."
+        />
+      );
+    } else if (currentTab === "Instruction") {
+      return (
+        <TextBox
+          title="Instruction"
+          content="1. Use the search bar to find your origin and destination.
+2. Click on the Map button to view the map.
+3. Use the filter button to apply various filters on the map.
+4. Click on the data insight card to view more detailed information.
+5. Navigate through the map to explore different points of interest."
+        />
+      );
     }
   };
 
   return (
     <MantineProvider>
-      <div style={{ display: "flex", height: "100%", width: "100%" }}>
-        <nav
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            padding: "1em",
-            background: "#333",
-            color: "#fff",
-            width: "200px",
-          }}
-        >
-          <Button
-            onClick={() => setCurrentTab("Map")}
-            style={{ margin: "1em 0" }}
-          >
-            Map
-          </Button>
-          <Button
-            onClick={() => setCurrentTab("About Us")}
-            style={{ margin: "1em 0" }}
-          >
-            About Us
-          </Button>
-        </nav>
+      <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
         <div style={{ flex: 1 }}>{renderContent()}</div>
       </div>
     </MantineProvider>
   );
 };
+
+const TextBox = ({ title, content }) => (
+  <div
+    style={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      zIndex: 2,
+      width: "50%",
+      padding: "2em",
+      backgroundColor: "rgba(255, 255, 255, 0.9)",
+      borderRadius: "8px",
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    }}
+  >
+    <Title order={2} style={{ marginBottom: "1em" }}>
+      {title}
+    </Title>
+    <Text>{content}</Text>
+    <Button onClick={() => setCurrentTab("Map")} style={{ marginTop: "1em" }}>
+      Close
+    </Button>
+  </div>
+);
 
 const MapContent = () => {
   const map = useMap();
@@ -125,6 +154,8 @@ const MapContent = () => {
     onShowChoropleth(!showChoropleth);
   };
 
+  // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
+
   const [polygons, setPolygons] = useState();
 
   console.log("exists", selectedAccident.length > 0);
@@ -142,29 +173,138 @@ const MapContent = () => {
       style={{
         display: "flex",
         flexDirection: "column",
+        height: "100%",
+        width: "100%",
       }}
     >
       <div
         style={{
+          position: "absolute",
+          top: "10px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1,
+          width: "70%",
           display: "flex",
-          columnGap: "2em",
-          width: "80%",
-          marginTop: "auto",
-          marginLeft: "auto",
-          marginRight: "auto",
-          marginBottom: "2em",
+          alignItems: "center",
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          padding: "1em",
+          borderRadius: "8px",
         }}
       >
-        <div>
-          <div>
+        <Button
+          onClick={() => setCurrentTab("Map")}
+          style={{ margin: "1em 0", marginRight: "1em" }}
+        >
+          Map
+        </Button>
+        <Button
+          onClick={() => setCurrentTab("Instruction")}
+          style={{ margin: "1em 0", marginRight: "1em" }}
+        >
+          Instruction
+        </Button>
+        <Button
+          onClick={() => setCurrentTab("About Us")}
+          style={{ margin: "1em 0", marginRight: "1em" }}
+        >
+          About Us
+        </Button>
+        <Group style={{ flex: 0.8 }}>
+          <div style={{ flex: 0.8 }}>
             <InputLabel>From:</InputLabel>
             <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
           </div>
-          <div>
+          <div style={{ flex: 0.8 }}>
             <InputLabel>Dest:</InputLabel>
             <PlaceAutocomplete onPlaceSelect={setDestPlace} />
           </div>
-        </div>
+        </Group>
+        <Button
+          onClick={toggleChoropleth}
+          size="xs"
+          style={{
+            width: "50px",
+            height: "50px",
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: "50%",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginLeft: "1em",
+          }}
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/filter.png"
+            alt="Filter"
+            style={{ width: "16px", height: "16px" }}
+          />
+        </Button>
+      </div>
+      <div
+        style={{ position: "absolute", top: "10px", right: "10px", zIndex: 1 }}
+      >
+        {selectedAccident.length > 0 &&
+          accidentInsight.length > 0 &&
+          showChoropleth && (
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Center style={{ marginBottom: "4em" }}>
+                <Title order={4}>Data insight</Title>
+              </Center>
+              <BarChart
+                h={200}
+                w={300}
+                data={selectedAccident}
+                dataKey="severity"
+                series={[{ name: "count", color: "violet.5" }]}
+              />
+              <Space h="lg" />
+              <div>
+                <Button
+                  fullWidth
+                  radius="md"
+                  variant="light"
+                  onClick={() => onShowMore(!showMore)}
+                >
+                  {showMore ? "Show less" : "Show more"}
+                </Button>
+                <Space h="md" />
+                <ScrollArea.Autosize>
+                  {showMore && (
+                    <Stack
+                      h={200}
+                      bg="var(--mantine-color-body)"
+                      align="stretch"
+                      justify="flex-start"
+                      gap="sm"
+                    >
+                      {accidentInsight.map((accident, index) => (
+                        <Center key={index}>
+                          <Card
+                            shadow="none"
+                            padding={"sm"}
+                            withBorder
+                            w={"100%"}
+                          >
+                            <Group justify="space-between" w={"100%"}>
+                              <Text fw={500} p={0} m={0}>
+                                {accident.accident_type}
+                              </Text>
+                              <Text fw={500} p={0} m={0}>
+                                {accident.count}
+                              </Text>
+                            </Group>
+                          </Card>
+                        </Center>
+                      ))}
+                    </Stack>
+                  )}
+                </ScrollArea.Autosize>
+              </div>
+            </Card>
+          )}
       </div>
       <div
         style={{
@@ -192,12 +332,8 @@ const MapContent = () => {
           mapId="da37f3254c6a6d1c"
           style={{
             display: "flex",
-            borderRadius: "1em",
-            marginBottom: "auto",
-            marginLeft: "auto",
-            marginRight: "auto",
-            height: "80%",
-            width: "80%",
+            height: "100%",
+            width: "100%",
           }}
         >
           <Directions originPlace={originPlace} destPlace={destPlace} />
@@ -211,85 +347,8 @@ const MapContent = () => {
             showChoropleth={showChoropleth}
           />
         </Map>
-        <div>
-          <p>Sidebar</p>
-          {selectedAccident.length > 0 &&
-            accidentInsight.length > 0 &&
-            showChoropleth && (
-              <div
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  padding: "1em",
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                  backgroundColor: "#fff",
-                  marginTop: "1em",
-                }}
-              >
-                <BarChart
-                  h={300}
-                  w={300}
-                  data={selectedAccident}
-                  dataKey="severity"
-                  series={[{ name: "count", color: "violet.5" }]}
-                />
-                <Button
-                  onClick={() => onShowMore(!showMore)}
-                  style={{ marginTop: "1em" }}
-                >
-                  {showMore ? "Show less" : "Show more"}
-                </Button>
-                {showMore && (
-                  <div>
-                    {accidentInsight.map((accident, index) => (
-                      <div key={index}>
-                        <p>{accident.accident_type}</p>
-                        <p>{accident.count}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-        </div>
-        <button
-          onClick={toggleChoropleth}
-          style={{
-            position: "absolute",
-            top: "20px",
-            right: "20px",
-            width: "50px",
-            height: "50px",
-            backgroundColor: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: "50%",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://img.icons8.com/ios-filled/50/000000/filter.png"
-            alt="Filter"
-            style={{ width: "24px", height: "24px" }}
-          />
-        </button>
       </div>
     </APIProvider>
-  );
-};
-
-const AboutUs = () => {
-  return (
-    <div style={{ padding: "2em", textAlign: "center" }}>
-      <h1>About Us</h1>
-      <p>
-        Welcome to our application. We provide detailed insights into various
-        locations using advanced mapping technologies. Our aim is to help you
-        navigate and understand your surroundings better.
-      </p>
-    </div>
   );
 };
 
