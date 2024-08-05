@@ -6,11 +6,20 @@ import { createRoot } from "react-dom/client";
 
 import {
   Button,
+  Card,
+  Center,
   Combobox,
+  Group,
   InputBase,
   InputLabel,
   MantineProvider,
+  ScrollArea,
+  Space,
+  Stack,
+  Title,
   useCombobox,
+  Text,
+  Switch,
 } from "@mantine/core";
 
 import {
@@ -30,6 +39,7 @@ import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import type { Marker } from "@googlemaps/markerclusterer";
 
 import { BarChart } from "@mantine/charts";
+import { Tooltip } from "recharts";
 
 type Poi = { key: string; location: google.maps.LatLngLiteral };
 const locations: Poi[] = [
@@ -87,7 +97,16 @@ const App = () => {
             About Us
           </Button>
         </nav>
-        <div style={{ flex: 1 }}>{renderContent()}</div>
+        <div
+          style={{
+            flex: 1,
+            heigh: "100lvh",
+            overflow: "hidden",
+            marginBottom: "5em",
+          }}
+        >
+          {renderContent()}
+        </div>
       </div>
     </MantineProvider>
   );
@@ -144,30 +163,52 @@ const MapContent = () => {
       style={{
         display: "flex",
         flexDirection: "column",
+        height: "100lvh",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          columnGap: "2em",
-          width: "80%",
-          marginTop: "auto",
-          marginLeft: "auto",
-          marginRight: "auto",
-          marginBottom: "2em",
-        }}
-      >
-        <div>
-          <div>
-            <InputLabel>From:</InputLabel>
-            <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
-          </div>
-          <div>
-            <InputLabel>Dest:</InputLabel>
-            <PlaceAutocomplete onPlaceSelect={setDestPlace} />
-          </div>
+      <Space h="xl" />
+      <Group justify="space-around">
+        <Stack>
+          <Title order={3}>Navigate</Title>
+          <Group>
+            <div>
+              <InputLabel>From:</InputLabel>
+              <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
+            </div>
+            <div>
+              <InputLabel>Dest:</InputLabel>
+              <PlaceAutocomplete onPlaceSelect={setDestPlace} />
+            </div>
+          </Group>
+        </Stack>
+        {/* <Group style={{ alignSelf: "flex-end" }}>
+          <Switch onChange={toggleChoropleth} label="Choropleth" />
+        </Group> */}
+        <div style={{ alignSelf: "flex-end" }}>
+          <Button
+            onClick={toggleChoropleth}
+            size="xs"
+            style={{
+              width: "50px",
+              height: "50px",
+              backgroundColor: "#fff",
+              border: "1px solid #ccc",
+              borderRadius: "50%",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src="https://img.icons8.com/ios-filled/50/000000/filter.png"
+              alt="Filter"
+              style={{ width: "16px", height: "16px" }}
+            />
+          </Button>
         </div>
-      </div>
+      </Group>
+      <Space h="xl" />
       <div
         style={{
           display: "flex",
@@ -199,7 +240,7 @@ const MapContent = () => {
             marginLeft: "auto",
             marginRight: "auto",
             height: "80%",
-            width: "80%",
+            width: "70%",
           }}
         >
           <Directions originPlace={originPlace} destPlace={destPlace} />
@@ -213,57 +254,97 @@ const MapContent = () => {
             showChoropleth={showChoropleth}
           />
         </Map>
+        {/* Sidebar */}
         <div>
           {selectedAccident.length > 0 &&
             accidentInsight.length > 0 &&
             showChoropleth && (
               <div>
-                <BarChart
-                  h={500}
-                  w={350}
-                  data={selectedAccident}
-                  dataKey="severity"
-                  series={[{ name: "count", color: "violet.5" }]}
-                />
-                <Button onClick={() => onShowMore(!showMore)}>
-                  {showMore ? "Show less" : "Show more"}
-                </Button>
-                {showMore && (
+                <Card
+                  shadow="sm"
+                  padding="lg"
+                  radius="md"
+                  withBorder
+                  h={"100lvh"}
+                >
+                  <Center style={{ marginBottom: "4em" }}>
+                    <Title order={4}>Data insight</Title>
+                  </Center>
+
+                  {/* <Card.Section>
+                      <Image
+                        src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
+                        height={160}
+                        alt="Norway"
+                      />
+                    </Card.Section> */}
+                  <BarChart
+                    h={200}
+                    w={300}
+                    data={selectedAccident}
+                    dataKey="severity"
+                    series={[{ name: "count", color: "violet.5" }]}
+                  />
+                  <Space h="lg" />
+
+                  {/* <Group justify="space-between" mt="md" mb="xs">
+                        <Text fw={500}>Norway Fjord Adventures</Text>
+                        <Badge color="pink">On Sale</Badge>
+                      </Group> */}
+
+                  {/* <Text size="sm" c="dimmed">
+                        With Fjord Tours you can explore more of the magical
+                        fjord landscapes with tours and activities on and around
+                        the fjords of Norway
+                      </Text> */}
                   <div>
-                    {accidentInsight.map((accident, index) => (
-                      <div key={index}>
-                        <p>{accident.accident_type}</p>
-                        <p>{accident.count}</p>
-                      </div>
-                    ))}
+                    <Button
+                      fullWidth
+                      radius="md"
+                      variant="light"
+                      onClick={() => onShowMore(!showMore)}
+                    >
+                      {showMore ? "Show less" : "Show more"}
+                    </Button>
+
+                    <Space h="md" />
+
+                    <ScrollArea.Autosize>
+                      {showMore && (
+                        <Stack
+                          h={220}
+                          bg="var(--mantine-color-body)"
+                          align="stretch"
+                          justify="flex-start"
+                          gap="sm"
+                        >
+                          {accidentInsight.map((accident, index) => (
+                            <Center>
+                              <Card
+                                shadow="none"
+                                padding={"sm"}
+                                withBorder
+                                w={"100%"}
+                              >
+                                <Group justify="space-between" w={"100%"}>
+                                  <Text fw={500} p={0} m={0}>
+                                    {accident.accident_type}
+                                  </Text>
+                                  <Text fw={500} p={0} m={0}>
+                                    {accident.count}
+                                  </Text>
+                                </Group>
+                              </Card>
+                            </Center>
+                          ))}
+                        </Stack>
+                      )}
+                    </ScrollArea.Autosize>
                   </div>
-                )}
+                </Card>
               </div>
             )}
         </div>
-        <button
-          onClick={toggleChoropleth}
-          style={{
-            position: "absolute",
-            top: "-70px",
-            right: "170px",
-            width: "50px",
-            height: "50px",
-            backgroundColor: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: "50%",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src="https://img.icons8.com/ios-filled/50/000000/filter.png"
-            alt="Filter"
-            style={{ width: "24px", height: "24px" }}
-          />
-        </button>
       </div>
     </APIProvider>
   );
