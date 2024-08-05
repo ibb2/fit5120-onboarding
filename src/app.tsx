@@ -6,10 +6,19 @@ import { createRoot } from "react-dom/client";
 
 import {
   Button,
+  Card,
+  Center,
   Combobox,
+  Group,
   InputBase,
   InputLabel,
   MantineProvider,
+  ScrollArea,
+  ScrollAreaAutosize,
+  Space,
+  Stack,
+  Text,
+  Title,
   useCombobox,
 } from "@mantine/core";
 
@@ -185,6 +194,7 @@ const App = () => {
             style={{
               display: "flex",
               flexDirection: "row",
+              justifyContent: "space-around",
               width: "100%",
               height: "100%",
             }}
@@ -206,12 +216,12 @@ const App = () => {
               mapId="da37f3254c6a6d1c"
               style={{
                 display: "flex",
-                borderRadius: "1em",
-                marginBottom: "auto",
-                marginLeft: "auto",
-                marginRight: "auto",
-                height: "80%",
-                width: "80%",
+                borderRadius: "0.5em",
+                // marginBottom: "auto",
+                // marginLeft: "auto",
+                // marginRight: "auto",
+                height: "90%",
+                width: "60%",
               }}
               // mapTypeId="hybrid"
             >
@@ -228,36 +238,89 @@ const App = () => {
                 showChoropleth={showChoropleth}
               />
             </Map>
-            <div>
-              {/* Sidebar */}
-              <p>Sidebar</p>
-              {selectedAccident.length > 0 &&
-                accidentInsight.length > 0 &&
-                showChoropleth && (
-                  <div>
+            {/* Sidebar */}
+            {selectedAccident.length > 0 &&
+              accidentInsight.length > 0 &&
+              showChoropleth && (
+                <div>
+                  <Card shadow="sm" padding="lg" radius="md" withBorder>
+                    <Center style={{ marginBottom: "4em" }}>
+                      <Title order={4}>Data insight</Title>
+                    </Center>
+
+                    {/* <Card.Section>
+                      <Image
+                        src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
+                        height={160}
+                        alt="Norway"
+                      />
+                    </Card.Section> */}
                     <BarChart
-                      h={300}
+                      h={200}
                       w={300}
                       data={selectedAccident}
                       dataKey="severity"
                       series={[{ name: "count", color: "violet.5" }]}
                     />
-                    <Button onClick={() => onShowMore(!showMore)}>
-                      {showMore ? "Show less" : "Show more"}
-                    </Button>
-                    {showMore && (
-                      <div>
-                        {accidentInsight.map((accident, index) => (
-                          <div>
-                            <p>{accident.accident_type}</p>
-                            <p>{accident.count}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-            </div>
+                    <Space h="lg" />
+
+                    {/* <Group justify="space-between" mt="md" mb="xs">
+                        <Text fw={500}>Norway Fjord Adventures</Text>
+                        <Badge color="pink">On Sale</Badge>
+                      </Group> */}
+
+                    {/* <Text size="sm" c="dimmed">
+                        With Fjord Tours you can explore more of the magical
+                        fjord landscapes with tours and activities on and around
+                        the fjords of Norway
+                      </Text> */}
+                    <div>
+                      <Button
+                        fullWidth
+                        radius="md"
+                        variant="light"
+                        onClick={() => onShowMore(!showMore)}
+                      >
+                        {showMore ? "Show less" : "Show more"}
+                      </Button>
+
+                      <Space h="md" />
+
+                      <ScrollArea.Autosize mah={221}>
+                        {showMore && (
+                          <Stack
+                            h={220}
+                            bg="var(--mantine-color-body)"
+                            align="stretch"
+                            justify="flex-start"
+                            gap="sm"
+                          >
+                            {accidentInsight.map((accident, index) => (
+                              <Center>
+                                <Card
+                                  shadow="none"
+                                  padding={"sm"}
+                                  withBorder
+                                  w={"100%"}
+                                >
+                                  <Group justify="space-between" w={"100%"}>
+                                    <Text fw={500} p={0} m={0}>
+                                      {accident.accident_type}
+                                    </Text>
+                                    <Text fw={500} p={0} m={0}>
+                                      {accident.count}
+                                    </Text>
+                                  </Group>
+                                </Card>
+                              </Center>
+                            ))}
+                          </Stack>
+                        )}
+                      </ScrollArea.Autosize>
+                    </div>
+                  </Card>
+                </div>
+              )}
           </div>
         </APIProvider>
       </div>
