@@ -110,6 +110,19 @@ const App = () => {
   );
 };
 
+const AboutUs = () => {
+  return (
+    <div style={{ padding: "2em", textAlign: "center" }}>
+      <h1>About Us</h1>
+      <p>
+        Welcome to our application. We provide detailed insights into accident
+        around Meblbourne CBD. Our aim is to help user find the safiest road to
+        travel with bicycle.
+      </p>
+    </div>
+  );
+};
+
 const MapContent = () => {
   const map = useMap();
 
