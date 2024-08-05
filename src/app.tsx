@@ -125,8 +125,6 @@ const MapContent = () => {
     onShowChoropleth(!showChoropleth);
   };
 
-  // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
-
   const [polygons, setPolygons] = useState();
 
   console.log("exists", selectedAccident.length > 0);
@@ -217,7 +215,16 @@ const MapContent = () => {
           {selectedAccident.length > 0 &&
             accidentInsight.length > 0 &&
             showChoropleth && (
-              <div>
+              <div
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  padding: "1em",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  backgroundColor: "#fff",
+                  marginTop: "1em",
+                }}
+              >
                 <BarChart
                   h={500}
                   w={350}
@@ -225,7 +232,10 @@ const MapContent = () => {
                   dataKey="severity"
                   series={[{ name: "count", color: "violet.5" }]}
                 />
-                <Button onClick={() => onShowMore(!showMore)}>
+                <Button
+                  onClick={() => onShowMore(!showMore)}
+                  style={{ marginTop: "1em" }}
+                >
                   {showMore ? "Show less" : "Show more"}
                 </Button>
                 {showMore && (
@@ -245,7 +255,7 @@ const MapContent = () => {
           onClick={toggleChoropleth}
           style={{
             position: "absolute",
-            top: "-70px",
+            top: "-80px",
             right: "170px",
             width: "50px",
             height: "50px",
