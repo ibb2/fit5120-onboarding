@@ -63,32 +63,26 @@ const App = () => {
 
   return (
     <MantineProvider>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          width: "100%",
-        }}
-      >
+      <div style={{ display: "flex", height: "100%", width: "100%" }}>
         <nav
           style={{
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
             padding: "1em",
             background: "#333",
             color: "#fff",
+            width: "200px",
           }}
         >
           <Button
             onClick={() => setCurrentTab("Map")}
-            style={{ margin: "0 1em" }}
+            style={{ margin: "1em 0" }}
           >
             Map
           </Button>
           <Button
             onClick={() => setCurrentTab("About Us")}
-            style={{ margin: "0 1em" }}
+            style={{ margin: "1em 0" }}
           >
             About Us
           </Button>
@@ -127,7 +121,7 @@ const MapContent = () => {
     setAccidentInsight(accident);
   };
 
-  const setShowChoropleth = () => {
+  const toggleChoropleth = () => {
     onShowChoropleth(!showChoropleth);
   };
 
@@ -142,28 +136,6 @@ const MapContent = () => {
   if (accidentInsight.length > 0) {
     console.log("selected insight", accidentInsight);
   }
-
-  // const loadData = () => {
-  //   const polygons = map?.data.loadGeoJson(
-  //     "https://68u0w3apk7.execute-api.ap-southeast-2.amazonaws.com/dev/v1/bike-routes",
-  //   );
-
-  //   setPolygons(polygons)
-
-  //   // map?.addListener("click", handleClick);
-
-  //   map?.data.setStyle({
-  //     strokeColor: "orange",
-  //     strokeWeight: 1,
-  //     fillColor: "orange",
-  //     fillOpacity: 0.2,
-  //   });
-
-  //   console.log("data loaded.");
-  //   setCount(count + 1);
-  // };
-
-  // if (count < 1) loadData();
 
   return (
     <APIProvider
@@ -195,12 +167,6 @@ const MapContent = () => {
             <PlaceAutocomplete onPlaceSelect={setDestPlace} />
           </div>
         </div>
-        <div>
-          <Button onClick={setShowChoropleth}>
-            {showChoropleth ? "Hide choropleth view" : "Enable choropleth view"}
-          </Button>
-          <span>gradient for crash data for sub regions</span>
-        </div>
       </div>
       <div
         style={{
@@ -208,6 +174,7 @@ const MapContent = () => {
           flexDirection: "row",
           width: "100%",
           height: "100%",
+          position: "relative",
         }}
       >
         <Map
@@ -234,7 +201,6 @@ const MapContent = () => {
             height: "80%",
             width: "80%",
           }}
-          // mapTypeId="hybrid"
         >
           <Directions originPlace={originPlace} destPlace={destPlace} />
           <AdvancedMarker ref={markerRef} position={null} />
@@ -248,15 +214,13 @@ const MapContent = () => {
           />
         </Map>
         <div>
-          {/* Sidebar */}
-          <p>Sidebar</p>
           {selectedAccident.length > 0 &&
             accidentInsight.length > 0 &&
             showChoropleth && (
               <div>
                 <BarChart
-                  h={300}
-                  w={300}
+                  h={500}
+                  w={350}
                   data={selectedAccident}
                   dataKey="severity"
                   series={[{ name: "count", color: "violet.5" }]}
@@ -267,7 +231,7 @@ const MapContent = () => {
                 {showMore && (
                   <div>
                     {accidentInsight.map((accident, index) => (
-                      <div>
+                      <div key={index}>
                         <p>{accident.accident_type}</p>
                         <p>{accident.count}</p>
                       </div>
@@ -277,6 +241,29 @@ const MapContent = () => {
               </div>
             )}
         </div>
+        <button
+          onClick={toggleChoropleth}
+          style={{
+            position: "absolute",
+            top: "-70px",
+            right: "170px",
+            width: "50px",
+            height: "50px",
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: "50%",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/filter.png"
+            alt="Filter"
+            style={{ width: "24px", height: "24px" }}
+          />
+        </button>
       </div>
     </APIProvider>
   );
@@ -287,9 +274,9 @@ const AboutUs = () => {
     <div style={{ padding: "2em", textAlign: "center" }}>
       <h1>About Us</h1>
       <p>
-        Welcome to our application. We provide detailed insights into accident
-        around Meblbourne CBD. Our aim is to help user find the safiest road to
-        travel with bicycle.
+        Welcome to our application. We provide detailed insights into various
+        locations using advanced mapping technologies. Our aim is to help you
+        navigate and understand your surroundings better.
       </p>
     </div>
   );
@@ -313,7 +300,6 @@ const Directions = ({ originPlace, destPlace }: DirectionsProps) => {
   const selected = routes[routeIndex];
   const leg = selected?.legs[0];
 
-  // Initialize directions service and renderer
   useEffect(() => {
     if (!routesLibrary || !map) return;
     setDirectionsService(new routesLibrary.DirectionsService());
@@ -341,7 +327,6 @@ const Directions = ({ originPlace, destPlace }: DirectionsProps) => {
 
   if (count < 1) loadData();
 
-  // Use directions service
   useEffect(() => {
     if (!directionsService || !directionsRenderer) return;
 
@@ -365,7 +350,6 @@ const Directions = ({ originPlace, destPlace }: DirectionsProps) => {
     }
   }, [directionsService, directionsRenderer, originPlace, destPlace]);
 
-  // Update direction route
   useEffect(() => {
     if (!directionsRenderer) return;
     directionsRenderer.setRouteIndex(routeIndex);
@@ -838,34 +822,7 @@ const PoiMarkers = (props: {
 
   if (!loadedAccidentSeverity) handleAccidentSeverity();
 
-  return (
-    <>
-      {/* <Circle
-        radius={800}
-        center={circleCenter}
-        strokeColor={"#0c4cb3"}
-        strokeOpacity={1}
-        strokeWeight={3}
-        fillColor={"#3b82f6"}
-        fillOpacity={0.3}
-      />
-      {props.pois.map((poi: Poi) => (
-        <AdvancedMarker
-          key={poi.key}
-          position={poi.location}
-          ref={(marker) => setMarkerRef(marker, poi.key)}
-          clickable={true}
-          onClick={handleClick}
-        >
-          <Pin
-            background={"#FBBC04"}
-            glyphColor={"#000"}
-            borderColor={"#000"}
-          />
-        </AdvancedMarker>
-      ))} */}
-    </>
-  );
+  return <></>;
 };
 
 export default App;
