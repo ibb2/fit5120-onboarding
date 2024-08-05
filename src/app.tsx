@@ -20,6 +20,7 @@ import {
   useCombobox,
   Text,
   Switch,
+  Container,
 } from "@mantine/core";
 
 import {
@@ -347,13 +348,19 @@ const MapContent = () => {
 
 const AboutUs = () => {
   return (
-    <div style={{ padding: "2em", textAlign: "center" }}>
-      <h1>About Us</h1>
-      <p>
-        Welcome to our application. We provide detailed insights into various
-        locations using advanced mapping technologies. Our aim is to help you
-        navigate and understand your surroundings better.
-      </p>
+    <div style={{ padding: "2em" }}>
+      <Container>
+        <Group>
+          <Center>
+            <h1>About Us</h1>
+          </Center>
+          <Text>
+            Welcome to our application. We provide detailed insights into
+            various locations using advanced mapping technologies. Our aim is to
+            help you navigate and understand your surroundings better.
+          </Text>
+        </Group>
+      </Container>
     </div>
   );
 };
