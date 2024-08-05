@@ -9,6 +9,7 @@ import {
   Card,
   Center,
   Combobox,
+  Grid,
   Group,
   InputBase,
   InputLabel,
@@ -17,6 +18,7 @@ import {
   ScrollAreaAutosize,
   Space,
   Stack,
+  Switch,
   Text,
   Title,
   useCombobox,
@@ -143,187 +145,175 @@ const App = () => {
 
   return (
     <MantineProvider>
-      <div
+      <APIProvider
+        apiKey={process.env.GOOGLE_MAPS_API_KEY}
+        onLoad={() => console.log("Maps API has loaded.")}
         style={{
           display: "flex",
           flexDirection: "column",
-          alignItems: "end",
-          height: "100%",
-          width: "100%",
+          height: "100lvh",
         }}
       >
-        <APIProvider
-          apiKey={process.env.GOOGLE_MAPS_API_KEY}
-          onLoad={() => console.log("Maps API has loaded.")}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              columnGap: "2em",
-              width: "80%",
-              marginTop: "auto",
-              marginLeft: "auto",
-              marginRight: "auto",
-              marginBottom: "2em",
-            }}
-          >
-            <div>
-              <div>
-                <InputLabel>From:</InputLabel>
-                <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
-              </div>
-              <div>
-                <InputLabel>Dest:</InputLabel>
-                <PlaceAutocomplete onPlaceSelect={setDestPlace} />
-              </div>
-            </div>
-            <div>
-              <Button onClick={setShowChoropleth}>
-                {showChoropleth
-                  ? "Hide choropleth view"
-                  : "Enable choropleth view"}
-              </Button>
-              <span>gradient for crash data for sub regions</span>
-            </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            <Map
-              defaultZoom={13}
-              defaultCenter={{
-                lat: -37.813138869052366,
-                lng: 144.95398015604053,
-              }}
-              onCameraChanged={(ev: MapCameraChangedEvent) =>
-                console.log(
-                  "camera changed:",
-                  ev.detail.center,
-                  "zoom:",
-                  ev.detail.zoom,
-                )
-              }
-              mapId="da37f3254c6a6d1c"
+        <Space h="xl" />
+        <Grid gutter="xl">
+          <Grid.Col span={12}>
+            <Group justify="space-around">
+              <Stack>
+                <Title order={3}>Navigate</Title>
+                <Group>
+                  <div>
+                    <InputLabel>From:</InputLabel>
+                    <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
+                  </div>
+                  <div>
+                    <InputLabel>Dest:</InputLabel>
+                    <PlaceAutocomplete onPlaceSelect={setDestPlace} />
+                  </div>
+                </Group>
+              </Stack>
+              <Group style={{ alignSelf: "flex-end" }}>
+                <Switch onChange={setShowChoropleth} label="Choropleth" />
+              </Group>
+            </Group>
+          </Grid.Col>
+          <Grid.Col span={12} style={{ height: "80lvh" }}>
+            <div
               style={{
                 display: "flex",
-                borderRadius: "0.5em",
-                // marginBottom: "auto",
-                // marginLeft: "auto",
-                // marginRight: "auto",
-                height: "90%",
-                width: "60%",
+                flexDirection: "row",
+                justifyContent: "space-around",
+                width: "100%",
+                height: "100%",
               }}
-              // mapTypeId="hybrid"
             >
-              <Directions originPlace={originPlace} destPlace={destPlace} />
-              {/* <PlacesAutoComplete /> */}
-              {/* <AutocompletePlaces /> */}
-              <AdvancedMarker ref={markerRef} position={null} />
-              <AdvancedMarker ref={destMarkerRef} position={null} />
-              <PoiMarkers
-                pois={locations}
-                selectInsight={selectInsight}
-                selectAccident={selectAccident}
-                setSelectedPostcode={setSelectedPostcode}
-                showChoropleth={showChoropleth}
-              />
-            </Map>
-            {/* Sidebar */}
-            {selectedAccident.length > 0 &&
-              accidentInsight.length > 0 &&
-              showChoropleth && (
-                <div>
-                  <Card shadow="sm" padding="lg" radius="md" withBorder>
-                    <Center style={{ marginBottom: "4em" }}>
-                      <Title order={4}>Data insight</Title>
-                    </Center>
+              <Map
+                defaultZoom={13}
+                defaultCenter={{
+                  lat: -37.813138869052366,
+                  lng: 144.95398015604053,
+                }}
+                onCameraChanged={(ev: MapCameraChangedEvent) =>
+                  console.log(
+                    "camera changed:",
+                    ev.detail.center,
+                    "zoom:",
+                    ev.detail.zoom,
+                  )
+                }
+                mapId="da37f3254c6a6d1c"
+                style={{
+                  display: "flex",
+                  borderRadius: "0.5em",
+                  width: "70%",
+                }}
+                // mapTypeId="hybrid"
+              >
+                <Directions originPlace={originPlace} destPlace={destPlace} />
+                {/* <PlacesAutoComplete /> */}
+                {/* <AutocompletePlaces /> */}
+                <AdvancedMarker ref={markerRef} position={null} />
+                <AdvancedMarker ref={destMarkerRef} position={null} />
+                <PoiMarkers
+                  pois={locations}
+                  selectInsight={selectInsight}
+                  selectAccident={selectAccident}
+                  setSelectedPostcode={setSelectedPostcode}
+                  showChoropleth={showChoropleth}
+                />
+              </Map>
+              {/* Sidebar */}
+              {selectedAccident.length > 0 &&
+                accidentInsight.length > 0 &&
+                showChoropleth && (
+                  <div>
+                    <Card
+                      shadow="sm"
+                      padding="lg"
+                      radius="md"
+                      withBorder
+                      h={"100%"}
+                    >
+                      <Center style={{ marginBottom: "4em" }}>
+                        <Title order={4}>Data insight</Title>
+                      </Center>
 
-                    {/* <Card.Section>
+                      {/* <Card.Section>
                       <Image
                         src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
                         height={160}
                         alt="Norway"
                       />
                     </Card.Section> */}
-                    <BarChart
-                      h={200}
-                      w={300}
-                      data={selectedAccident}
-                      dataKey="severity"
-                      series={[{ name: "count", color: "violet.5" }]}
-                    />
-                    <Space h="lg" />
+                      <BarChart
+                        h={200}
+                        w={300}
+                        data={selectedAccident}
+                        dataKey="severity"
+                        series={[{ name: "count", color: "violet.5" }]}
+                      />
+                      <Space h="lg" />
 
-                    {/* <Group justify="space-between" mt="md" mb="xs">
+                      {/* <Group justify="space-between" mt="md" mb="xs">
                         <Text fw={500}>Norway Fjord Adventures</Text>
                         <Badge color="pink">On Sale</Badge>
                       </Group> */}
 
-                    {/* <Text size="sm" c="dimmed">
+                      {/* <Text size="sm" c="dimmed">
                         With Fjord Tours you can explore more of the magical
                         fjord landscapes with tours and activities on and around
                         the fjords of Norway
                       </Text> */}
-                    <div>
-                      <Button
-                        fullWidth
-                        radius="md"
-                        variant="light"
-                        onClick={() => onShowMore(!showMore)}
-                      >
-                        {showMore ? "Show less" : "Show more"}
-                      </Button>
+                      <div>
+                        <Button
+                          fullWidth
+                          radius="md"
+                          variant="light"
+                          onClick={() => onShowMore(!showMore)}
+                        >
+                          {showMore ? "Show less" : "Show more"}
+                        </Button>
 
-                      <Space h="md" />
+                        <Space h="md" />
 
-                      <ScrollArea.Autosize mah={221}>
-                        {showMore && (
-                          <Stack
-                            h={220}
-                            bg="var(--mantine-color-body)"
-                            align="stretch"
-                            justify="flex-start"
-                            gap="sm"
-                          >
-                            {accidentInsight.map((accident, index) => (
-                              <Center>
-                                <Card
-                                  shadow="none"
-                                  padding={"sm"}
-                                  withBorder
-                                  w={"100%"}
-                                >
-                                  <Group justify="space-between" w={"100%"}>
-                                    <Text fw={500} p={0} m={0}>
-                                      {accident.accident_type}
-                                    </Text>
-                                    <Text fw={500} p={0} m={0}>
-                                      {accident.count}
-                                    </Text>
-                                  </Group>
-                                </Card>
-                              </Center>
-                            ))}
-                          </Stack>
-                        )}
-                      </ScrollArea.Autosize>
-                    </div>
-                  </Card>
-                </div>
-              )}
-          </div>
-        </APIProvider>
-      </div>
+                        <ScrollArea.Autosize>
+                          {showMore && (
+                            <Stack
+                              h={220}
+                              bg="var(--mantine-color-body)"
+                              align="stretch"
+                              justify="flex-start"
+                              gap="sm"
+                            >
+                              {accidentInsight.map((accident, index) => (
+                                <Center>
+                                  <Card
+                                    shadow="none"
+                                    padding={"sm"}
+                                    withBorder
+                                    w={"100%"}
+                                  >
+                                    <Group justify="space-between" w={"100%"}>
+                                      <Text fw={500} p={0} m={0}>
+                                        {accident.accident_type}
+                                      </Text>
+                                      <Text fw={500} p={0} m={0}>
+                                        {accident.count}
+                                      </Text>
+                                    </Group>
+                                  </Card>
+                                </Center>
+                              ))}
+                            </Stack>
+                          )}
+                        </ScrollArea.Autosize>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+            </div>
+          </Grid.Col>
+        </Grid>
+      </APIProvider>
     </MantineProvider>
   );
 };
