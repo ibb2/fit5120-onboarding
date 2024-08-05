@@ -144,8 +144,6 @@ const MapContent = () => {
     onShowChoropleth(!showChoropleth);
   };
 
-  // https://discover.data.vic.gov.au/dataset/postcodes/resource/5fc1fcbc-3d95-476d-8b56-2916a782d54c
-
   const [polygons, setPolygons] = useState();
 
   console.log("exists", selectedAccident.length > 0);
@@ -259,6 +257,7 @@ const MapContent = () => {
           {selectedAccident.length > 0 &&
             accidentInsight.length > 0 &&
             showChoropleth && (
+<<<<<<< HEAD
               <div>
                 <Card
                   shadow="sm"
@@ -297,6 +296,32 @@ const MapContent = () => {
                         fjord landscapes with tours and activities on and around
                         the fjords of Norway
                       </Text> */}
+=======
+              <div
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  padding: "1em",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  backgroundColor: "#fff",
+                  marginTop: "1em",
+                }}
+              >
+                <BarChart
+                  h={500}
+                  w={350}
+                  data={selectedAccident}
+                  dataKey="severity"
+                  series={[{ name: "count", color: "violet.5" }]}
+                />
+                <Button
+                  onClick={() => onShowMore(!showMore)}
+                  style={{ marginTop: "1em" }}
+                >
+                  {showMore ? "Show less" : "Show more"}
+                </Button>
+                {showMore && (
+>>>>>>> 02d1d08b6c73ebcde929121d9efc8af5724d9929
                   <div>
                     <Button
                       fullWidth
@@ -345,6 +370,32 @@ const MapContent = () => {
               </div>
             )}
         </div>
+<<<<<<< HEAD
+=======
+        <button
+          onClick={toggleChoropleth}
+          style={{
+            position: "absolute",
+            top: "-80px",
+            right: "170px",
+            width: "50px",
+            height: "50px",
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: "50%",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/filter.png"
+            alt="Filter"
+            style={{ width: "24px", height: "24px" }}
+          />
+        </button>
+>>>>>>> 02d1d08b6c73ebcde929121d9efc8af5724d9929
       </div>
     </APIProvider>
   );
