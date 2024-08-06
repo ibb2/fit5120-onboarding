@@ -21,6 +21,8 @@ import {
   Text,
   Switch,
   Container,
+  CloseButton,
+  VisuallyHidden,
 } from "@mantine/core";
 
 import {
@@ -196,7 +198,7 @@ const MapContent = ({ setCurrentTab }) => {
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 1,
-          width: "70%",
+          width: "50%",
           display: "flex",
           alignItems: "center",
           backgroundColor: "rgba(255, 255, 255, 1)",
@@ -269,6 +271,15 @@ const MapContent = ({ setCurrentTab }) => {
           accidentInsight.length > 0 &&
           showChoropleth && (
             <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Stack w={"100%"} align="flex-end" justify="flex-end">
+                <CloseButton
+                  onClick={() => {
+                    toggleChoropleth;
+                    setSelectedAccident([]);
+                    setAccidentInsight([]);
+                  }}
+                ></CloseButton>
+              </Stack>
               <Center style={{ marginBottom: "4em" }}>
                 <Title order={4}>Data insight</Title>
               </Center>
