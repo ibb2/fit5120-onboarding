@@ -64,14 +64,19 @@ const locations: Poi[] = [
 const App = () => {
   const [currentTab, setCurrentTab] = useState("Map");
 
+  const changeCurrentTab = (tab: String) => {
+    setCurrentTab(tab);
+  };
+
   const renderContent = () => {
     if (currentTab === "Map") {
-      return <MapContent />;
+      return <MapContent setCurrentTab={changeCurrentTab} />;
     } else if (currentTab === "About Us") {
       return (
         <TextBox
           title="About Us"
           content="Welcome to our application. We provide detailed insights into various locations using advanced mapping technologies. Our aim is to help you navigate and understand your surroundings better."
+          setCurrentTab={changeCurrentTab}
         />
       );
     } else if (currentTab === "Instruction") {
@@ -83,6 +88,7 @@ const App = () => {
 3. Use the filter button to apply various filters on the map.
 4. Click on the data insight card to view more detailed information.
 5. Navigate through the map to explore different points of interest."
+          setCurrentTab={changeCurrentTab}
         />
       );
     }
@@ -97,7 +103,7 @@ const App = () => {
   );
 };
 
-const TextBox = ({ title, content }) => (
+const TextBox = ({ title, content, setCurrentTab }) => (
   <div
     style={{
       position: "absolute",
@@ -116,13 +122,19 @@ const TextBox = ({ title, content }) => (
       {title}
     </Title>
     <Text>{content}</Text>
-    <Button onClick={() => setCurrentTab("Map")} style={{ marginTop: "1em" }}>
+    <Button
+      onClick={() => {
+        console.log("was clicked?");
+        setCurrentTab("Map");
+      }}
+      style={{ marginTop: "1em" }}
+    >
       Close
     </Button>
   </div>
 );
 
-const MapContent = () => {
+const MapContent = ({ setCurrentTab }) => {
   const map = useMap();
 
   const [count, setCount] = useState(0);
