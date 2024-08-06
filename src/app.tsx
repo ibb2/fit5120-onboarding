@@ -199,61 +199,68 @@ const MapContent = ({ setCurrentTab }) => {
           width: "70%",
           display: "flex",
           alignItems: "center",
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          backgroundColor: "rgba(255, 255, 255, 1)",
           padding: "1em",
           borderRadius: "8px",
         }}
       >
-        <Button
-          onClick={() => setCurrentTab("Map")}
-          style={{ margin: "1em 0", marginRight: "1em" }}
-        >
-          Map
-        </Button>
-        <Button
-          onClick={() => setCurrentTab("Instruction")}
-          style={{ margin: "1em 0", marginRight: "1em" }}
-        >
-          Instruction
-        </Button>
-        <Button
-          onClick={() => setCurrentTab("About Us")}
-          style={{ margin: "1em 0", marginRight: "1em" }}
-        >
-          About Us
-        </Button>
-        <Group style={{ flex: 0.8 }}>
-          <div style={{ flex: 0.8 }}>
-            <InputLabel>From:</InputLabel>
-            <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
-          </div>
-          <div style={{ flex: 0.8 }}>
-            <InputLabel>Dest:</InputLabel>
-            <PlaceAutocomplete onPlaceSelect={setDestPlace} />
-          </div>
-        </Group>
-        <Button
-          onClick={toggleChoropleth}
-          size="xs"
-          style={{
-            width: "50px",
-            height: "50px",
-            backgroundColor: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: "50%",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginLeft: "1em",
-          }}
-        >
-          <img
-            src="https://img.icons8.com/ios-filled/50/000000/filter.png"
-            alt="Filter"
-            style={{ width: "16px", height: "16px" }}
-          />
-        </Button>
+        <Stack w={"100%"}>
+          <Container>
+            <Group>
+              <Button
+                onClick={() => setCurrentTab("Map")}
+                style={{ margin: "1em 0", marginRight: "1em" }}
+              >
+                Map
+              </Button>
+              <Button
+                onClick={() => setCurrentTab("Instruction")}
+                style={{ margin: "1em 0", marginRight: "1em" }}
+              >
+                Instruction
+              </Button>
+              <Button
+                onClick={() => setCurrentTab("About Us")}
+                style={{ margin: "1em 0", marginRight: "1em" }}
+              >
+                About Us
+              </Button>
+            </Group>
+          </Container>
+          <Group style={{ flex: 0.8 }} ce>
+            <div style={{ flex: 0.8 }}>
+              <InputLabel>From:</InputLabel>
+              <PlaceAutocomplete onPlaceSelect={setOriginPlace} />
+            </div>
+            <div style={{ flex: 0.8 }}>
+              <InputLabel>Dest:</InputLabel>
+              <PlaceAutocomplete onPlaceSelect={setDestPlace} />
+            </div>
+            <Button
+              onClick={toggleChoropleth}
+              size="xs"
+              style={{
+                width: "36px",
+                height: "36px",
+                backgroundColor: "#fff",
+                border: "1px solid #ccc",
+                borderRadius: "50%",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                alignSelf: "flex-end",
+                marginLeft: "1em",
+              }}
+            >
+              <img
+                src="https://img.icons8.com/ios-filled/50/000000/filter.png"
+                alt="Filter"
+                style={{ width: "16px", height: "16px" }}
+              />
+            </Button>
+          </Group>
+        </Stack>
       </div>
       <div
         style={{ position: "absolute", top: "10px", right: "10px", zIndex: 1 }}
